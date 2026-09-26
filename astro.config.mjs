@@ -2,9 +2,8 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
-// ⚠️ 部署到 Azure Static Web Apps 后，把下面这行换成你的真实域名。
-// 首次部署时 Azure 会给你一个形如 https://<随机名>.azurestaticapps.net 的地址。
-export const SITE_URL = 'https://example.azurestaticapps.net';
+// Azure Static Web Apps 分配的域名。绑定自定义域名后改成新域名即可。
+export const SITE_URL = 'https://wonderful-island-01ed1a600.3.azurestaticapps.net';
 
 export default defineConfig({
   site: SITE_URL,
