@@ -3,15 +3,15 @@
  */
 export const SITE = {
   /** 浏览器标签页和首页大标题显示的名字 */
-  title: 'Li Zhichen',
+  title: '21nc',
   /** 一句话简介，显示在首页大标题下面 */
-  tagline: '格拉斯哥大学在读，写代码，也写点别的。',
+  tagline: 'UESTC student',
   /** 用于 SEO 描述和 RSS */
-  description: '个人博客：技术笔记、学习记录和一些随想。',
+  description: '个人博客：技术笔记、和一些随想。',
   /** 文章列表里作者署名 */
-  author: 'Li Zhichen',
+  author: '21nc&dw0x',
   /** 页脚版权署名 */
-  copyrightName: 'Li Zhichen',
+  copyrightName: '21nc&dw0x',
   /** 语言标签 */
   lang: 'zh-CN',
 
@@ -24,8 +24,8 @@ export const SITE = {
 
   /** 社交链接，不需要的删掉即可 */
   social: [
-    { label: 'GitHub', href: 'https://github.com/' },
-    { label: 'Email', href: 'mailto:3181081L@student.gla.ac.uk' },
+    { label: 'GitHub', href: 'https://github.com/ZinChl' },
+    { label: 'Email', href: 'mailto:261164313@qq.com' },
   ],
 
   /** 首页「最近文章」显示几篇 */
