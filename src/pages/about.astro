@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../site.config';
+---
+
+<BaseLayout title="关于" description={`关于 ${SITE.title}`}>
+  <article>
+    <header class="post-header">
+      <h1>关于</h1>
+    </header>
+
+    <div class="prose">
+      <p>
+        你好，我是 {SITE.author}。这里是我的个人博客，用来放过一些技术笔记、学习记录，
+        以及偶尔冒出来的想法。
+      </p>
+
+      <h2>在做的事</h2>
+      <ul>
+        <li>在格拉斯哥大学读书</li>
+        <li>折腾一些自己感兴趣的项目</li>
+        <li>把学到的东西写下来 —— 写清楚才算真的懂了</li>
+      </ul>
+
+      <h2>这个站怎么搭的</h2>
+      <p>
+        用 <a href="https://astro.build" rel="noopener">Astro</a> 生成静态页面，
+        托管在 <strong>Azure Static Web Apps</strong> 免费层上。
+        每次向 GitHub 仓库推代码，Azure 会自动重新构建并发布，同时刷新全球 CDN 和 HTTPS 证书。
+        整站成本是 0。
+      </p>
+
+      <h2>联系我</h2>
+      <p>
+        欢迎通过下面的方式找我：
+      </p>
+      <ul>
+        {SITE.social.map((s) => <li><a href={s.href} rel="me noopener">{s.label}</a></li>)}
+      </ul>
+    </div>
+  </article>
+</BaseLayout>

@@ -1,0 +1,30 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { formatDate, isoDate } from '../utils';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+}
+
+const { post } = Astro.props;
+const { title, description, pubDate, tags } = post.data;
+---
+
+<li>
+  <a class="post-item" href={`/blog/${post.id}/`}>
+    <h3>{title}</h3>
+    <p>{description}</p>
+    <div class="post-meta">
+      <time datetime={isoDate(pubDate)}>{formatDate(pubDate)}</time>
+      {
+        tags.length > 0 && (
+          <span class="tags">
+            {tags.map((t) => (
+              <span class="tag">{t}</span>
+            ))}
+          </span>
+        )
+      }
+    </div>
+  </a>
+</li>

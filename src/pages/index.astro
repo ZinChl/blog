@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import { SITE } from '../site.config';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+const recent = posts.slice(0, SITE.homePostCount);
+---
+
+<BaseLayout>
+  <section class="hero">
+    <h1>{SITE.title}</h1>
+    <p class="tagline">{SITE.tagline}</p>
+    <ul class="social-links">
+      {SITE.social.map((s) => <li><a href={s.href} rel="me noopener">{s.label}</a></li>)}
+    </ul>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>最近写的东西</h2>
+      <a href="/blog/">全部文章 →</a>
+    </div>
+
+    {
+      recent.length > 0 ? (
+        <ul class="post-list">
+          {recent.map((post) => (
+            <PostCard post={post} />
+          ))}
+        </ul>
+      ) : (
+        <p class="empty">还没有文章。去 src/content/blog/ 里新建一个 .md 文件就能开始写了。</p>
+      )
+    }
+  </section>
+</BaseLayout>
