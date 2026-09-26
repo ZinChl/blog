@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=https://unpkg.com/@sveltia/cms/schema/sveltia-cms.json
+#
+# Sveltia CMS 配置。这个文件决定了编辑器长什么样、能改哪些字段。
+# 改动后需要 push 才会在线上生效。
+
+app_title: 写点什么
+
+backend:
+  name: github
+  repo: ZinChl/blog
+  branch: main
+
+site_url: https://wonderful-island-01ed1a600.3.azurestaticapps.net
+display_url: https://wonderful-island-01ed1a600.3.azurestaticapps.net
+
+# 上传的图片会存到 public/images/，文章里用 /images/文件名 引用
+media_folder: public/images
+public_folder: /images
+
+collections:
+  - name: blog
+    label: 文章
+    label_singular: 一篇文章
+    description: 保存到 src/content/blog/，提交后约 1 分钟自动上线
+    folder: src/content/blog
+    create: true
+    delete: true
+    slug: '{{fields.slug}}'
+    extension: md
+    format: frontmatter
+    sortable_fields: [pubDate, title]
+    fields:
+      - name: slug
+        label: 文件名（也会变成网址）
+        widget: string
+        hint: 只能用小写字母、数字和连字符。填 my-first-post，网址就是 /blog/my-first-post/
+        pattern:
+          - '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+          - 只能用小写字母、数字和连字符（-）
+
+      - name: title
+        label: 标题
+        widget: string
+
+      - name: description
+        label: 摘要
+        widget: text
+        hint: 一句话。显示在文章列表和搜索结果里。
+
+      - name: pubDate
+        label: 发布日期
+        widget: datetime
+        date_format: YYYY-MM-DD
+        time_format: false
+        picker_utc: true
+
+      - name: updatedDate
+        label: 更新日期
+        widget: datetime
+        date_format: YYYY-MM-DD
+        time_format: false
+        picker_utc: true
+        required: false
+        hint: 留空就不显示
+
+      - name: tags
+        label: 标签
+        widget: list
+        required: false
+        default: []
+        hint: 回车添加一个标签
+
+      - name: draft
+        label: 存为草稿（不发布）
+        widget: boolean
+        default: false
+
+      - name: body
+        label: 正文
+        widget: markdown

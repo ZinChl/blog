@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# 内容编辑器不需要被收录
+Disallow: /admin/

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 别让搜索引擎收录这个页面 -->
+    <meta name="robots" content="noindex, nofollow" />
+    <title>内容编辑器</title>
+  </head>
+  <body>
+    <!--
+      Sveltia CMS 浏览器包。由 scripts/copy-cms.mjs 在构建时从 node_modules 复制过来，
+      因此不依赖外部 CDN（找不到时它会自动回退到 unpkg）。
+
+      注意两点，都是官方文档明确要求的：
+      1. 不要加 type="module"
+      2. 不要加 <link rel="stylesheet">（样式已打包进 JS）
+    -->
+    <script src="/admin/sveltia-cms.js"></script>
+  </body>
+</html>

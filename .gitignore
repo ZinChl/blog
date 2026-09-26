@@ -2,6 +2,11 @@
 dist/
 .astro/
 
+# 编辑器资源，构建时从 node_modules 复制到 public/admin/（见 scripts/copy-cms.mjs）
+public/admin/sveltia-cms.js
+public/admin/chunks/
+public/admin/locales/
+
 # dependencies
 node_modules/
 

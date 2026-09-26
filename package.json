@@ -4,14 +4,16 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "cms:assets": "node scripts/copy-cms.mjs",
+    "dev": "npm run cms:assets && astro dev",
+    "build": "npm run cms:assets && astro build",
     "preview": "astro preview",
     "check": "astro check"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
+    "@sveltia/cms": "^0.221.2",
     "astro": "^7.3.5"
   }
 }
