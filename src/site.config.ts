@@ -7,7 +7,7 @@ export const SITE = {
   /** 一句话简介，显示在首页大标题下面 */
   tagline: 'UESTC student',
   /** 用于 SEO 描述和 RSS */
-  description: '个人博客：技术笔记、和一些随想。',
+  description: '个人博客：技术笔记和一些随想。',
   /** 文章列表里作者署名 */
   author: '21nc&dw0x',
   /** 页脚版权署名 */
