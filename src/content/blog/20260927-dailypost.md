@@ -10,3 +10,7 @@ draft: false
 ---
 
 八点起床去光电楼当受试，可是我昨晚两点半才睡啊😭
+
+在github上面提交了第一个commit,第一次成为contributer。
+
+嗯好困
