@@ -19,7 +19,8 @@ const blog = defineCollection({
     updatedDate: optionalDate,
     tags: z.array(z.string()).default([]),
     draft: z.boolean().default(false),
-    // 编辑器用它来决定文件名；站点按文件名生成 URL，所以这里只是占位
+    // 编辑器（Sveltia CMS）用它决定文章网址。Astro 会用这个字段覆盖由文件名推导出的 slug，
+    // 所以改了它 URL 就跟着变 —— 留言也是按它分区的，改 slug 相当于换了个留言区。
     slug: z.string().optional(),
   }),
 });
