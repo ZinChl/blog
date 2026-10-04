@@ -19,6 +19,9 @@ pnpm-debug.log*
 # environment
 .env
 .env.production
+# API 的本地配置里有连接字符串，绝不提交
+api/local.settings.json
+api/.funcignore
 
 # macOS / editor
 .DS_Store

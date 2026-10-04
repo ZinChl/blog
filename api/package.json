@@ -1,0 +1,9 @@
+{
+  "name": "blog-comments-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "博客匿名留言 API（Azure Static Web Apps 托管函数）",
+  "dependencies": {
+    "@azure/data-tables": "^13.3.2"
+  }
+}

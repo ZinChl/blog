@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Comments from '../../components/Comments.astro';
 import { formatDate, isoDate } from '../../utils';
 import { SITE } from '../../site.config';
 
@@ -70,5 +71,7 @@ const { title, description, pubDate, updatedDate, tags } = post.data;
         )
       }
     </nav>
+
+    <Comments slug={post.id} />
   </article>
 </BaseLayout>
