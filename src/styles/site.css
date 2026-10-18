@@ -1,16 +1,17 @@
 /* ==========================================================================
    站点外壳：页头 / 页脚 / 滚动进度 / 跑马灯 / 页面转场
+   纯黑画布 + 黑白主色 + 金 / 冰蓝两个信号色。
    ========================================================================== */
 
 /* ---------------------------------------------------------------
-   页面转场：跨文档 View Transition（Chrome / Edge / Safari 渐进增强）
+   页面转场：跨文档 View Transition（渐进增强）
    --------------------------------------------------------------- */
 @view-transition {
   navigation: auto;
 }
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 0.4s;
+  animation-duration: 0.35s;
   animation-timing-function: var(--ease-out);
 }
 ::view-transition-old(root) {
@@ -22,38 +23,36 @@
 @keyframes vt-fade-out {
   to {
     opacity: 0;
-    transform: translateY(-8px);
-    filter: blur(2px);
+    transform: translateY(-6px);
   }
 }
 @keyframes vt-fade-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
-    filter: blur(2px);
+    transform: translateY(8px);
   }
 }
 
 /* ---------------------------------------------------------------
-   滚动进度条
+   滚动进度条：冰蓝 → 白 → 金
    --------------------------------------------------------------- */
 .scroll-progress {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
+  height: 1px;
   z-index: 120;
   pointer-events: none;
-  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  background: color-mix(in srgb, var(--ink) 10%, transparent);
 }
 .scroll-progress span {
   display: block;
   height: 100%;
   transform: scaleX(0);
   transform-origin: 0 50%;
-  background: linear-gradient(90deg, var(--gold-deep), var(--gold), var(--gold-bright), var(--iris));
-  box-shadow: 0 0 12px var(--glow-gold);
+  background: linear-gradient(90deg, var(--ice-deep), var(--ice), var(--ink), var(--gold));
+  box-shadow: 0 0 10px var(--glow-ice);
   will-change: transform;
 }
 
@@ -66,10 +65,9 @@
   z-index: 80;
   height: var(--header-h);
   transition:
-    background-color 0.45s var(--ease-out),
-    border-color 0.45s var(--ease-out),
-    backdrop-filter 0.45s var(--ease-out),
-    height 0.45s var(--ease-out);
+    background-color 0.35s var(--ease-out),
+    border-color 0.35s var(--ease-out),
+    height 0.35s var(--ease-out);
   border-bottom: 1px solid transparent;
 }
 .site-header::before {
@@ -77,17 +75,16 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 88%, transparent) 0%, color-mix(in srgb, var(--bg) 42%, transparent) 70%, transparent 100%);
-  opacity: 1;
-  transition: opacity 0.45s var(--ease-out);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 86%, transparent), transparent);
+  transition: opacity 0.35s var(--ease-out);
   pointer-events: none;
 }
 .site-header.is-scrolled {
-  height: 64px;
-  background: color-mix(in srgb, var(--bg) 76%, transparent);
+  height: 60px;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
   border-bottom-color: var(--line-soft);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
 }
 .site-header.is-scrolled::before {
   opacity: 0;
@@ -104,11 +101,11 @@
   padding-inline: var(--gutter);
 }
 
-/* 品牌 */
+/* 品牌：几何标记 + 字标 */
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.7rem;
+  gap: 0.65rem;
   color: var(--ink);
   flex: none;
 }
@@ -117,42 +114,49 @@
   color: var(--ink);
 }
 .brand-sigil {
-  width: 32px;
-  height: 32px;
-  color: var(--gold);
+  width: 26px;
+  height: 26px;
+  color: var(--ink);
   flex: none;
-  transition: transform 1.2s var(--ease-out);
+  transition: transform 1.4s var(--ease-out);
 }
 .brand:hover .brand-sigil {
   transform: rotate(90deg);
 }
+.brand-sigil .sigil-gold {
+  fill: var(--gold);
+}
+.brand-sigil .sigil-ice {
+  fill: var(--ice);
+}
 .brand-name {
   display: flex;
   flex-direction: column;
-  gap: 0.16rem;
+  gap: 0.14rem;
   line-height: 1;
 }
 .brand-name strong {
-  font-family: var(--font-serif);
-  font-size: 1.42rem;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
 }
 .brand-name small {
   font-family: var(--font-mono);
-  font-size: 0.55rem;
+  font-size: 0.5rem;
   font-weight: 500;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.28em;
   color: var(--ink-3);
   text-transform: uppercase;
   white-space: nowrap;
 }
 
-/* 导航 */
+/* 导航：白字 + 冰蓝下划线 */
 .site-nav {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.15rem;
   margin-left: auto;
 }
 .site-nav__link {
@@ -160,70 +164,72 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.55rem 0.85rem;
+  padding: 0.55rem 0.8rem;
   color: var(--ink-2);
-  font-size: 0.86rem;
-  letter-spacing: 0.03em;
-  transition: color 0.3s var(--ease-out);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: color 0.25s var(--ease-out);
 }
 .site-nav__link::after {
   content: '';
   position: absolute;
-  left: 0.85rem;
-  right: 0.85rem;
-  bottom: 0.28rem;
+  left: 0.8rem;
+  right: 0.8rem;
+  bottom: 0.26rem;
   height: 1px;
-  background: var(--gold);
+  background: var(--ice);
   transform: scaleX(0);
   transform-origin: left;
-  opacity: 0.85;
-  transition: transform 0.4s var(--ease-out);
+  transition: transform 0.35s var(--ease-out);
 }
 .site-nav__link:hover {
   color: var(--ink);
   text-decoration: none;
 }
 .site-nav__link:hover::after {
-  transform: scaleX(0.6);
+  transform: scaleX(0.55);
 }
 .site-nav__link[aria-current='page'] {
-  color: var(--gold-bright);
+  color: var(--ink);
 }
 .site-nav__link[aria-current='page']::after {
   transform: scaleX(1);
+  background: var(--gold);
 }
 
 /* 右侧动作区 */
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.2rem;
   flex: none;
 }
 .icon-btn {
   display: inline-grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   border: 1px solid transparent;
-  border-radius: 50%;
+  border-radius: 0;
   background: transparent;
   color: var(--ink-2);
   transition:
-    color 0.3s var(--ease-out),
-    border-color 0.3s var(--ease-out),
-    background 0.3s var(--ease-out),
-    transform 0.3s var(--ease-out);
+    color 0.25s var(--ease-out),
+    border-color 0.25s var(--ease-out),
+    background 0.25s var(--ease-out);
 }
 .icon-btn:hover {
-  color: var(--gold-bright);
+  color: var(--ice);
   border-color: var(--line);
   background: var(--surface);
 }
 .icon-btn svg {
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
 }
 
 /* 主题切换：日/月图标叠放 */
@@ -234,8 +240,8 @@
 .theme-toggle svg {
   position: absolute;
   transition:
-    transform 0.55s var(--ease-spring),
-    opacity 0.4s var(--ease-out);
+    transform 0.5s var(--ease-spring),
+    opacity 0.35s var(--ease-out);
 }
 .theme-toggle .icon-sun {
   transform: translateY(0) rotate(0deg);
@@ -268,10 +274,10 @@
   position: absolute;
   left: 50%;
   width: 20px;
-  height: 1.5px;
+  height: 1px;
   margin-left: -10px;
   background: currentColor;
-  transition: transform 0.4s var(--ease-out), opacity 0.3s var(--ease-out);
+  transition: transform 0.35s var(--ease-out), opacity 0.25s var(--ease-out);
 }
 .menu-toggle span:nth-child(1) {
   top: 15px;
@@ -306,18 +312,14 @@ body.menu-open {
   flex-direction: column;
   justify-content: center;
   padding: calc(var(--header-h) + 2rem) var(--gutter) 3rem;
-  background:
-    radial-gradient(60% 50% at 80% 10%, var(--glow-iris), transparent 70%),
-    linear-gradient(180deg, color-mix(in srgb, var(--bg-2) 98%, transparent), var(--bg));
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: var(--bg);
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-12px);
+  transform: translateY(-10px);
   transition:
-    opacity 0.45s var(--ease-out),
-    transform 0.45s var(--ease-out),
-    visibility 0s linear 0.45s;
+    opacity 0.4s var(--ease-out),
+    transform 0.4s var(--ease-out),
+    visibility 0s linear 0.4s;
 }
 body.menu-open .mobile-menu {
   opacity: 1;
@@ -328,40 +330,40 @@ body.menu-open .mobile-menu {
 .mobile-menu nav {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
 }
 .mobile-menu a {
   display: flex;
   align-items: baseline;
-  gap: 1rem;
-  padding: 0.85rem 0;
+  gap: 1.1rem;
+  padding: 0.9rem 0;
   border-bottom: 1px solid var(--line-soft);
-  font-family: var(--font-serif);
-  font-size: clamp(2rem, 9vw, 2.8rem);
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 8vw, 2.6rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
   color: var(--ink);
-  transition: color 0.3s var(--ease-out), padding-left 0.4s var(--ease-out);
+  transition: color 0.25s var(--ease-out), padding-left 0.35s var(--ease-out);
 }
 .mobile-menu a small {
   font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.2em;
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
   color: var(--ink-3);
 }
 .mobile-menu a:hover {
-  color: var(--gold-bright);
+  color: var(--ice);
   padding-left: 0.5rem;
   text-decoration: none;
 }
 .mobile-menu .mobile-menu__meta {
-  margin-top: 2.2rem;
+  margin-top: 2rem;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 1rem;
   font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.18em;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-3);
 }
@@ -372,98 +374,100 @@ body.menu-open .mobile-menu {
 .site-footer {
   position: relative;
   margin-top: clamp(2.4rem, 5vw, 4.5rem);
-  border-top: 1px solid var(--line-soft);
-  background:
-    radial-gradient(80% 120% at 50% 0%, var(--glow-gold), transparent 60%),
-    var(--bg-2);
+  border-top: 1px solid var(--line);
+  background: var(--bg);
   overflow: hidden;
 }
 .site-footer::before {
+  /* 顶部一道极细的金 → 冰蓝信号线 */
   content: '';
   position: absolute;
-  inset: 0;
-  background-image: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--gold) 26%, transparent) 0.6px,
-    transparent 0.7px
-  );
-  background-size: 30px 30px;
-  opacity: 0.35;
-  mask-image: linear-gradient(180deg, #000, transparent 55%);
-  -webkit-mask-image: linear-gradient(180deg, #000, transparent 55%);
-  pointer-events: none;
+  top: -1px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold), var(--ink-3) 38%, var(--ice-deep) 76%, transparent);
+  opacity: 0.75;
 }
 
 .footer-top {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.66fr) minmax(0, 0.66fr) minmax(0, 0.95fr);
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.62fr) minmax(0, 0.62fr) minmax(0, 0.92fr);
   gap: clamp(1.6rem, 3.6vw, 3rem);
-  padding-block: clamp(3rem, 6vw, 5rem) clamp(2.5rem, 4vw, 3.5rem);
+  padding-block: clamp(3rem, 6vw, 5rem) clamp(2.4rem, 4vw, 3.4rem);
 }
 .footer-brand .footer-wordmark {
-  font-family: var(--font-serif);
-  font-size: clamp(3.4rem, 8vw, 6.4rem);
-  font-weight: 400;
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 7vw, 5.6rem);
+  font-weight: 600;
   line-height: 0.86;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
   color: transparent;
-  -webkit-text-stroke: 1px color-mix(in srgb, var(--gold) 70%, transparent);
+  -webkit-text-stroke: 1.2px color-mix(in srgb, var(--ink) 84%, transparent);
   margin-bottom: 0.9rem;
-  transition: -webkit-text-stroke-color 0.5s var(--ease-out);
+  transition: -webkit-text-stroke-color 0.4s var(--ease-out), color 0.4s var(--ease-out);
 }
 .footer-brand:hover .footer-wordmark {
-  -webkit-text-stroke-color: var(--gold);
+  -webkit-text-stroke-color: var(--ice);
 }
 .footer-brand p {
   max-width: 26rem;
-  text-wrap: pretty;
   color: var(--ink-2);
   font-size: 0.92rem;
-  line-height: 1.8;
+  line-height: 1.85;
+  text-wrap: pretty;
 }
 .footer-brand .footer-latin {
-  margin-top: 0.5rem;
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 1.15rem;
+  margin-top: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   color: var(--ink-3);
 }
 
 .footer-col h3 {
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 500;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--gold);
-  margin-bottom: 1.1rem;
+  margin-bottom: 1.05rem;
 }
 .footer-col ul {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.5rem;
 }
 .footer-col a {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   color: var(--ink-2);
-  font-size: 0.9rem;
-  transition: color 0.3s var(--ease-out), transform 0.3s var(--ease-out);
+  font-size: 0.88rem;
+  transition: color 0.25s var(--ease-out), transform 0.25s var(--ease-out);
 }
 .footer-col a:hover {
-  color: var(--gold-bright);
+  color: var(--ice);
   text-decoration: none;
   transform: translateX(3px);
 }
 .footer-col .footer-note {
   color: var(--ink-3);
-  font-size: 0.82rem;
-  line-height: 1.9;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  line-height: 2;
+  letter-spacing: 0.04em;
   word-break: keep-all;
   overflow-wrap: break-word;
+}
+.footer-col .footer-note .clock {
+  color: var(--ink-2);
 }
 
 .footer-bottom {
@@ -473,11 +477,11 @@ body.menu-open .mobile-menu {
   align-items: center;
   justify-content: space-between;
   gap: 1rem 2rem;
-  padding-block: 1.4rem;
+  padding-block: 1.2rem;
   border-top: 1px solid var(--line-soft);
   font-family: var(--font-mono);
-  font-size: 0.64rem;
-  letter-spacing: 0.14em;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-3);
 }
@@ -485,7 +489,7 @@ body.menu-open .mobile-menu {
   color: var(--ink-2);
 }
 .footer-bottom a:hover {
-  color: var(--gold-bright);
+  color: var(--ice);
   text-decoration: none;
 }
 .footer-meta {
@@ -499,11 +503,7 @@ body.menu-open .mobile-menu {
   height: 3px;
   border-radius: 50%;
   background: var(--gold);
-  opacity: 0.6;
-}
-.clock {
-  font-variant-numeric: tabular-nums;
-  color: var(--ink-2);
+  opacity: 0.7;
 }
 
 /* 回到顶部 */
@@ -514,21 +514,22 @@ body.menu-open .mobile-menu {
   z-index: 60;
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
+  width: 42px;
+  height: 42px;
   border: 1px solid var(--line-strong);
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--bg) 78%, transparent);
-  backdrop-filter: blur(12px);
-  color: var(--gold);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(10px);
+  color: var(--ink);
   opacity: 0;
   visibility: hidden;
-  transform: translateY(12px);
+  transform: translateY(10px);
   transition:
-    opacity 0.4s var(--ease-out),
-    transform 0.4s var(--ease-out),
-    visibility 0s linear 0.4s,
-    background 0.3s var(--ease-out);
+    opacity 0.35s var(--ease-out),
+    transform 0.35s var(--ease-out),
+    visibility 0s linear 0.35s,
+    color 0.25s var(--ease-out),
+    border-color 0.25s var(--ease-out);
 }
 .to-top.is-visible {
   opacity: 1;
@@ -537,29 +538,28 @@ body.menu-open .mobile-menu {
   transition-delay: 0s;
 }
 .to-top:hover {
-  background: var(--surface-2);
-  border-color: var(--gold);
+  color: var(--ice);
+  border-color: var(--ice);
 }
 .to-top svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
 }
 
 /* ---------------------------------------------------------------
-   跑马灯
+   跑马灯：反色白带，黑字
    --------------------------------------------------------------- */
 .marquee {
   position: relative;
   overflow: hidden;
-  border-block: 1px solid var(--line-soft);
-  background: color-mix(in srgb, var(--bg-2) 60%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  background: var(--invert-bg);
+  color: var(--invert-fg);
+  border-block: 1px solid var(--invert-bg);
 }
 .marquee__track {
   display: flex;
   width: max-content;
-  animation: marquee-scroll 46s linear infinite;
+  animation: marquee-scroll 42s linear infinite;
 }
 .marquee:hover .marquee__track {
   animation-play-state: paused;
@@ -573,28 +573,30 @@ body.menu-open .mobile-menu {
   display: inline-flex;
   align-items: center;
   gap: clamp(1.4rem, 3vw, 2.6rem);
-  padding: clamp(0.9rem, 1.6vw, 1.35rem) clamp(1.4rem, 3vw, 2.6rem);
+  padding: clamp(0.8rem, 1.4vw, 1.2rem) clamp(1.4rem, 3vw, 2.6rem);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 500;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: var(--ink-3);
+  color: var(--invert-fg);
   white-space: nowrap;
 }
 .marquee__item strong {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 1.05rem;
-  font-weight: 400;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: none;
-  color: var(--ink-2);
+  color: var(--invert-fg);
 }
 .marquee__item .spark {
-  font-size: 0.8rem;
-  color: var(--gold);
-  opacity: 0.8;
+  font-size: 0.76rem;
+  color: var(--gold-on-invert);
+  opacity: 0.95;
+}
+.marquee__item:nth-child(3n) .spark {
+  color: var(--ice-on-invert);
 }
 @keyframes marquee-scroll {
   to {
@@ -615,54 +617,78 @@ body.menu-open .mobile-menu {
   justify-content: space-between;
   gap: 2rem;
   margin-bottom: clamp(2rem, 4vw, 3.2rem);
-  padding-top: clamp(1.1rem, 2vw, 1.6rem);
+  padding-top: clamp(1rem, 1.8vw, 1.5rem);
   border-top: 1px solid var(--line-soft);
 }
 .section-head__title {
   display: flex;
   align-items: flex-end;
-  gap: clamp(0.9rem, 2vw, 1.6rem);
+  gap: clamp(0.9rem, 2vw, 1.5rem);
 }
 .section-head h2 {
-  font-family: var(--font-serif);
-  font-size: clamp(2rem, 4.2vw, 3.4rem);
-  font-weight: 500;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 4vw, 3.2rem);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
   text-wrap: balance;
 }
 .section-head h2 em {
-  font-style: italic;
-  color: var(--gold);
+  font-style: normal;
+  color: var(--ice);
 }
 .section-head .section-kicker {
   font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.24em;
+  font-size: 0.6rem;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
   color: var(--ink-3);
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.55rem;
 }
 .section-head__aside {
   display: flex;
   align-items: center;
   gap: 1.4rem;
-  padding-bottom: 0.75rem;
+  padding-bottom: 0.7rem;
+}
+
+/* 反色章节：黑 ↔ 白互换，深色主题里是白底黑字 */
+.section--invert {
+  background: var(--invert-bg);
+  color: var(--invert-fg);
+}
+.section--invert .section-head {
+  border-top-color: var(--invert-line-soft);
+}
+.section--invert .section-kicker {
+  color: var(--invert-ink-3);
+}
+.section--invert .section-head h2 em {
+  color: var(--gold-on-invert);
+}
+.section--invert .index-num {
+  -webkit-text-stroke-color: color-mix(in srgb, var(--invert-fg) 55%, transparent);
+}
+.section--invert .link-underline {
+  color: var(--invert-ink-2);
+}
+.section--invert .link-underline:hover {
+  color: var(--ice-on-invert);
 }
 
 /* 空状态 */
 .empty {
   padding: 3rem 0;
   color: var(--ink-3);
-  font-family: var(--font-serif);
-  font-size: 1.15rem;
-  font-style: italic;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
 }
 
 /* ---------------------------------------------------------------
    窄屏
    --------------------------------------------------------------- */
-@media (max-width: 900px) {
+@media (max-width: 1080px) {
   .footer-top {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -673,7 +699,7 @@ body.menu-open .mobile-menu {
 
 @media (max-width: 720px) {
   :root {
-    --header-h: 64px;
+    --header-h: 62px;
   }
   .site-nav {
     display: none;
@@ -685,20 +711,20 @@ body.menu-open .mobile-menu {
     display: none;
   }
   .brand-sigil {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
   }
   .brand-name strong {
-    font-size: 1.28rem;
+    font-size: 1.1rem;
   }
   .brand-name small {
-    font-size: 0.5rem;
-    letter-spacing: 0.2em;
+    font-size: 0.46rem;
+    letter-spacing: 0.22em;
   }
   .section-head {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1.1rem;
+    gap: 1rem;
   }
   .section-head__aside {
     padding-bottom: 0;
@@ -708,8 +734,8 @@ body.menu-open .mobile-menu {
     align-items: flex-start;
   }
   .to-top {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
   }
 }
 

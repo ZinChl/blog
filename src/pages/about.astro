@@ -1,7 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Astrolabe from '../components/Astrolabe.astro';
 import Icon from '../components/Icon.astro';
 import { SITE } from '../site.config';
 
@@ -16,7 +15,7 @@ const socialIcon = (icon: string) =>
 const doing = [
   {
     no: '01',
-    title: '在电子科技大学读书',
+    title: '在 UESTC 读书',
     desc: '课业之外的时间，大多花在实验室、开发板和屏幕之间。',
     tag: 'STUDYING',
   },
@@ -50,7 +49,7 @@ const flow = [
 ];
 ---
 
-<BaseLayout title="关于" description={`关于 ${SITE.title} · ${SITE.nameCn}：一个在成都读书的人，写代码、看星星、记点东西。`}>
+<BaseLayout title="关于" description={`关于 ${SITE.title} · ${SITE.nameCn}：一个在 UESTC 读书的人，写代码、看星星、记点东西。`}>
   <div class="about">
     <!-- 关于页题头：巨大的陈述 + 星盘「肖像」 -->
     <header class="page-hero about-hero">
@@ -86,7 +85,62 @@ const flow = [
         <figure class="about-portrait" data-reveal="scale" style="--reveal-delay:.12s">
           <div class="about-portrait__frame">
             <div class="about-portrait__art" aria-hidden="true">
-              <Astrolabe />
+              <!-- 信号调谐盘：白色线稿 + 一个冰蓝点 + 一条金色刻度 -->
+              <svg
+                class="signal-dial"
+                viewBox="0 0 640 640"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                focusable="false">
+                <circle class="signal-dial__line-strong" cx="320" cy="320" r="284" stroke-width="1"
+                ></circle>
+
+                <g class="signal-dial__spin">
+                  <circle
+                    class="signal-dial__line"
+                    cx="320"
+                    cy="320"
+                    r="262"
+                    stroke-width="8"
+                    stroke-dasharray="1 13"></circle>
+                </g>
+
+                <g class="signal-dial__spin-rev">
+                  <circle
+                    class="signal-dial__soft"
+                    cx="320"
+                    cy="320"
+                    r="246"
+                    stroke-width="1"
+                    stroke-dasharray="2 10"></circle>
+                </g>
+
+                <circle class="signal-dial__line" cx="320" cy="320" r="190" stroke-width="0.8"
+                ></circle>
+                <circle class="signal-dial__soft" cx="320" cy="320" r="120"></circle>
+
+                <!-- 十字准线 -->
+                <line class="signal-dial__soft" x1="36" y1="320" x2="604" y2="320"></line>
+                <line class="signal-dial__soft" x1="320" y1="36" x2="320" y2="604"></line>
+
+                <!-- 冰蓝：一段外环弧 + 一个点 -->
+                <path
+                  class="signal-dial__ice"
+                  d="M320 36 A284 284 0 0 1 604 320"
+                  stroke-opacity="0.45"></path>
+                <circle class="signal-dial__ice-dot" cx="478" cy="508" r="4"></circle>
+
+                <!-- 金色：顶部一条刻度 -->
+                <line class="signal-dial__gold" x1="320" y1="20" x2="320" y2="38" stroke-width="2"
+                ></line>
+                <circle class="signal-dial__gold-dot" cx="320" cy="14" r="2"></circle>
+
+                <!-- 盘心 -->
+                <circle class="signal-dial__line-strong" cx="320" cy="320" r="26" stroke-width="0.8"
+                ></circle>
+                <line class="signal-dial__line-strong" x1="306" y1="320" x2="334" y2="320"></line>
+                <line class="signal-dial__line-strong" x1="320" y1="306" x2="320" y2="334"></line>
+              </svg>
             </div>
             <span class="about-portrait__plate mono">FIG. 02 — THE OBSERVER</span>
             <span class="about-portrait__corner about-portrait__corner--tl" aria-hidden="true"></span>
@@ -118,7 +172,7 @@ const flow = [
           <div class="about-prose">
             <p class="about-prose__lead">一个在读学生，写代码，看星星，也记点东西。</p>
             <p>
-              你好，我是 {SITE.author}，目前在{SITE.location}读书。
+              你好，我是 {SITE.author}，目前在 UESTC 读书。
               这里是我的个人博客，用来放技术笔记、学习记录，以及偶尔冒出来的想法。
               没有什么宏大的叙事，只是一个人认真生活过的痕迹。
             </p>
@@ -280,7 +334,7 @@ const flow = [
 
           <p class="about-contact__coords mono">
             {SITE.locationEn} <span aria-hidden="true">·</span> {SITE.coords}
-            <span aria-hidden="true">·</span> 21NC / THE ASTRAL ARCHIVE
+            <span aria-hidden="true">·</span> 21NC / SIGNAL
           </p>
         </div>
       </section>

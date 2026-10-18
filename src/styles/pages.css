@@ -22,9 +22,10 @@
 
 .page {
   /* 页面内局部色：三处以上复用，避免到处写 color-mix */
-  --pg-label: color-mix(in srgb, var(--ink-3) 42%, var(--ink-2));
-  --pg-body: color-mix(in srgb, var(--ink) 84%, var(--ink-2));
-  --pg-prose: color-mix(in srgb, var(--ink) 82%, var(--ink-2));
+  --pg-label: color-mix(in srgb, var(--ink-2) 68%, var(--ink-3));
+  --pg-body: color-mix(in srgb, var(--ink) 88%, var(--ink-2));
+  --pg-prose: color-mix(in srgb, var(--ink) 86%, var(--ink-2));
+  --pg-row-pad: clamp(0.8rem, 2vw, 1.5rem);
   padding-top: var(--header-h);
 }
 
@@ -46,9 +47,9 @@
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(60% 70% at 72% 0%, var(--glow-iris), transparent 65%),
-    radial-gradient(50% 60% at 10% 8%, var(--glow-gold), transparent 62%);
-  opacity: 0.8;
+    radial-gradient(48% 56% at 78% 0%, var(--glow-ice), transparent 66%),
+    radial-gradient(42% 50% at 8% 6%, var(--glow-gold), transparent 64%);
+  opacity: 0.42;
 }
 
 .page-hero__grid {
@@ -58,13 +59,13 @@
   pointer-events: none;
   background-image: radial-gradient(
     circle,
-    color-mix(in srgb, var(--gold) 22%, transparent) 0.7px,
-    transparent 0.9px
+    color-mix(in srgb, var(--ink) 26%, transparent) 1px,
+    transparent 1.2px
   );
-  background-size: 26px 26px;
+  background-size: 28px 28px;
   mask-image: linear-gradient(180deg, #000, transparent 72%);
   -webkit-mask-image: linear-gradient(180deg, #000, transparent 72%);
-  opacity: 0.4;
+  opacity: 0.24;
 }
 
 /* ==========================================================================
@@ -88,10 +89,10 @@
   border-radius: 50%;
   pointer-events: none;
   background:
-    radial-gradient(circle, var(--glow-iris) 0%, transparent 62%),
-    radial-gradient(circle at 64% 64%, var(--glow-gold) 0%, transparent 60%);
-  filter: blur(8px);
-  opacity: 0.72;
+    radial-gradient(circle, var(--glow-ice) 0%, transparent 60%),
+    radial-gradient(circle at 64% 64%, var(--glow-gold) 0%, transparent 58%);
+  filter: blur(14px);
+  opacity: 0.2;
 }
 
 /* 右侧的星盘印记：给巨大的左对齐标题配重，也让档案库有自己的符号 */
@@ -103,10 +104,24 @@
   width: min(29vw, 320px);
   aspect-ratio: 1;
   translate: 0 -50%;
-  color: var(--gold);
+  color: var(--ink);
   opacity: 0.42;
   pointer-events: none;
   animation: archive-sigil-spin 180s linear infinite;
+}
+
+/* 白色线稿 + 一枚冰蓝刻度环 + 金色圆心：信号只留两处 */
+.archive-hero__sigil svg > circle:nth-of-type(2) {
+  stroke: var(--ice);
+  stroke-opacity: 0.4;
+}
+
+.archive-hero__sigil svg > circle:last-of-type {
+  fill: var(--gold);
+}
+
+.archive-hero__sigil svg path[fill] {
+  fill-opacity: 0.5;
 }
 
 .archive-hero__sigil svg {
@@ -125,6 +140,13 @@
   opacity: 0.3;
 }
 
+/* 内页把共用标签 chip 改成直角；home.css 的圆角只留在首页 */
+.archive .tag-pill,
+.note-article .tag-pill,
+.prose .tag-pill {
+  border-radius: 0;
+}
+
 .archive-hero__grid {
   position: absolute;
   z-index: -1;
@@ -132,12 +154,12 @@
   height: 68%;
   pointer-events: none;
   background-image:
-    linear-gradient(90deg, color-mix(in srgb, var(--gold) 8%, transparent) 1px, transparent 1px),
-    linear-gradient(0deg, color-mix(in srgb, var(--gold) 8%, transparent) 1px, transparent 1px);
+    linear-gradient(90deg, color-mix(in srgb, var(--ink) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(0deg, color-mix(in srgb, var(--ink) 7%, transparent) 1px, transparent 1px);
   background-size: 88px 88px;
   mask-image: radial-gradient(ellipse 85% 100% at 100% 100%, #000 0%, transparent 72%);
   -webkit-mask-image: radial-gradient(ellipse 85% 100% at 100% 100%, #000 0%, transparent 72%);
-  opacity: 0.55;
+  opacity: 0.6;
 }
 
 .archive-hero__top {
@@ -159,32 +181,30 @@
   display: flex;
   flex-direction: column;
   margin-top: clamp(1.3rem, 2.8vw, 2.1rem);
-  font-family: var(--font-serif);
-  font-weight: 300;
-  font-size: clamp(3.6rem, 9vw, 7.4rem);
-  line-height: 0.92;
-  letter-spacing: -0.03em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(3.6rem, 9.2vw, 7.8rem);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
   color: var(--ink);
 }
 
 .archive-hero__title em {
-  font-style: italic;
-  font-weight: 400;
+  font-style: normal;
+  font-weight: 700;
   color: transparent;
-  background: linear-gradient(115deg, var(--gold-deep) 0%, var(--gold-bright) 48%, var(--gold) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--ink) 82%, transparent);
   padding-right: 0.04em;
 }
 
 .archive-hero__latin {
   display: block;
-  margin-top: clamp(0.9rem, 2vw, 1.4rem);
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: clamp(0.98rem, 1.5vw, 1.2rem);
-  font-weight: 400;
-  letter-spacing: 0.03em;
+  margin-top: clamp(1rem, 2vw, 1.5rem);
+  font-family: var(--font-mono);
+  font-size: clamp(0.58rem, 0.9vw, 0.68rem);
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
   color: var(--pg-label);
 }
 
@@ -233,11 +253,11 @@
 
 .archive-stat dd {
   margin: 0.4rem 0 0;
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: clamp(1.5rem, 2.5vw, 2.1rem);
-  font-weight: 300;
+  font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
@@ -285,44 +305,44 @@ html.filter-ready .archive-filter {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.42rem 0.85rem;
+  padding: 0.46rem 0.8rem;
   border: 1px solid var(--line-soft);
-  border-radius: var(--radius-pill);
-  background: var(--surface);
+  border-radius: 0;
+  background: transparent;
   color: var(--ink-2);
-  font-family: var(--font-sans);
-  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
   line-height: 1.4;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   transition:
     color var(--dur-fast) var(--ease-out),
     border-color var(--dur-fast) var(--ease-out),
-    background var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-out);
+    background var(--dur-fast) var(--ease-out);
 }
 
 .archive-filter__chip:hover {
   color: var(--ink);
-  border-color: var(--line);
-  background: var(--surface-2);
-  transform: translateY(-1px);
+  border-color: var(--line-strong);
+  background: transparent;
 }
 
 .archive-filter__chip.is-active {
-  color: var(--gold-bright);
-  border-color: color-mix(in srgb, var(--gold) 55%, transparent);
-  background: color-mix(in srgb, var(--gold) 9%, transparent);
+  color: var(--bg);
+  border-color: var(--ink);
+  background: var(--ink);
 }
 
 .archive-filter__count {
   font-family: var(--font-mono);
-  font-size: 0.56rem;
+  font-size: 0.54rem;
   letter-spacing: 0.08em;
   color: var(--pg-label);
 }
 
 .archive-filter__chip.is-active .archive-filter__count {
-  color: var(--gold);
+  color: currentColor;
+  opacity: 0.55;
 }
 
 .archive-toolbar__status {
@@ -345,10 +365,11 @@ html.filter-ready .archive-filter {
   margin: clamp(2rem, 4vw, 3rem) 0;
   padding: clamp(2rem, 4vw, 2.6rem) 1rem;
   border: 1px dashed var(--line-soft);
-  border-radius: var(--radius);
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 1.08rem;
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--ink-2);
   text-align: center;
 }
@@ -363,10 +384,11 @@ html.filter-ready .archive-filter {
   border: 0;
   background: none;
   padding: 0;
-  font-family: var(--font-serif);
-  font-style: italic;
+  font-family: var(--font-mono);
   font-size: 1em;
-  color: var(--gold-bright);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ice);
 }
 
 /* ---- 年份分组 ---- */
@@ -387,13 +409,13 @@ html.filter-ready .archive-filter {
 }
 
 .archive-year__num {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: clamp(2rem, 3.8vw, 3rem);
-  font-weight: 300;
+  font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.045em;
   color: transparent;
-  -webkit-text-stroke: 1px color-mix(in srgb, var(--gold) 62%, transparent);
+  -webkit-text-stroke: 1px var(--line-strong);
   user-select: none;
 }
 
@@ -438,49 +460,26 @@ html.filter-ready .archive-filter {
 .archive-item__link {
   position: relative;
   display: grid;
-  grid-template-columns: 6.6rem minmax(0, 1fr) 2.2rem;
+  grid-template-columns: 7.2rem minmax(0, 1fr) 2.4rem;
   align-items: start;
   gap: clamp(0.7rem, 1.6vw, 1.3rem) clamp(1.1rem, 3vw, 2.6rem);
   min-height: 0;
   overflow: hidden;
-  padding: clamp(1.3rem, 2.6vw, 1.9rem) 0.5rem clamp(1.3rem, 2.6vw, 1.9rem) 0;
+  margin-inline: calc(var(--pg-row-pad) * -1);
+  padding: clamp(1.35rem, 2.6vw, 1.9rem) var(--pg-row-pad);
   color: inherit;
-  transition: background 0.5s var(--ease-out);
-}
-
-.archive-item__link::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, var(--surface), transparent 72%);
-  opacity: 0;
-  transition: opacity 0.5s var(--ease-out);
-  pointer-events: none;
-}
-
-.archive-item__link::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 18%;
-  bottom: 18%;
-  width: 1px;
-  background: linear-gradient(180deg, var(--gold), transparent);
-  opacity: 0;
-  transform: scaleY(0.2);
-  transform-origin: 50% 0;
+  background: transparent;
   transition:
-    opacity 0.5s var(--ease-out),
-    transform 0.5s var(--ease-out);
+    background 0.3s var(--ease-out),
+    color 0.3s var(--ease-out);
 }
 
-.archive-item:hover .archive-item__link::before {
-  opacity: 0.7;
-}
-
-.archive-item:hover .archive-item__link::after {
-  opacity: 0.85;
-  transform: scaleY(1);
+/* 目录行 hover：整行反色（深色主题白底黑字 / 浅色主题黑底白字） */
+@media (hover: hover) {
+  .archive-item:hover .archive-item__link {
+    background: var(--invert-bg);
+    color: var(--invert-fg);
+  }
 }
 
 /* 日期列 */
@@ -509,8 +508,14 @@ html.filter-ready .archive-filter {
   color: var(--pg-label);
 }
 
-.archive-item:hover .archive-item__day {
-  color: var(--gold-bright);
+@media (hover: hover) {
+  .archive-item:hover .archive-item__day {
+    color: var(--invert-fg);
+  }
+
+  .archive-item:hover .archive-item__no {
+    color: var(--gold-on-invert);
+  }
 }
 
 /* 主体 */
@@ -524,17 +529,19 @@ html.filter-ready .archive-filter {
 }
 
 .archive-item__title {
-  font-family: var(--font-serif);
-  font-size: clamp(1.45rem, 2.6vw, 2rem);
-  font-weight: 500;
-  line-height: 1.24;
-  letter-spacing: -0.015em;
+  font-family: var(--font-display);
+  font-size: clamp(1.48rem, 2.6vw, 2.02rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
   color: var(--ink);
-  transition: color 0.4s var(--ease-out);
+  transition: color 0.3s var(--ease-out);
 }
 
-.archive-item:hover .archive-item__title {
-  color: var(--gold-bright);
+@media (hover: hover) {
+  .archive-item:hover .archive-item__title {
+    color: var(--invert-fg);
+  }
 }
 
 .archive-item__desc {
@@ -542,6 +549,13 @@ html.filter-ready .archive-filter {
   color: var(--ink-2);
   font-size: 0.89rem;
   line-height: 1.85;
+  transition: color 0.3s var(--ease-out);
+}
+
+@media (hover: hover) {
+  .archive-item:hover .archive-item__desc {
+    color: var(--invert-ink-2);
+  }
 }
 
 .archive-item__meta {
@@ -557,6 +571,20 @@ html.filter-ready .archive-filter {
   letter-spacing: 0.18em;
   color: var(--pg-label);
   white-space: nowrap;
+  transition: color 0.3s var(--ease-out);
+}
+
+@media (hover: hover) {
+  .archive-item:hover .archive-item__read {
+    color: var(--invert-ink-3);
+  }
+
+  /* 行反色时标签跟随反色变量，避免白底上看不清 */
+  .archive-item:hover .tag-pill {
+    border-color: var(--invert-line);
+    color: var(--invert-ink-2);
+    background: transparent;
+  }
 }
 
 /* 箭头 */
@@ -566,44 +594,32 @@ html.filter-ready .archive-filter {
   display: grid;
   place-items: center;
   justify-self: end;
-  width: 2.1rem;
-  height: 2.1rem;
+  width: 2rem;
+  height: 2rem;
   margin-top: 0.1rem;
-  border: 1px solid var(--line-soft);
-  border-radius: 50%;
-  color: var(--gold);
-  font-size: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  color: var(--ice);
+  font-size: 0.82rem;
   transition:
-    transform 0.45s var(--ease-out),
-    border-color 0.45s var(--ease-out),
-    background 0.45s var(--ease-out);
+    transform 0.4s var(--ease-out),
+    border-color 0.4s var(--ease-out),
+    color 0.4s var(--ease-out),
+    background 0.4s var(--ease-out);
 }
 
-.archive-item:hover .archive-item__arrow {
-  transform: translate(2px, -2px);
-  border-color: var(--gold);
-  background: var(--surface-2);
+@media (hover: hover) {
+  .archive-item:hover .archive-item__arrow {
+    transform: translate(3px, -3px);
+    border-color: var(--invert-line);
+    color: var(--ice-on-invert);
+    background: transparent;
+  }
 }
 
-/* 悬停时浮出的星图 */
+/* 悬停星图取消：目录行保持纯文字索引的克制感，信号只留金 / 冰两处 */
 .archive-item__chart {
-  position: absolute;
-  right: 3.4rem;
-  top: 50%;
-  translate: 0 -50%;
-  width: clamp(120px, 13vw, 170px);
-  aspect-ratio: 16 / 10;
-  z-index: 0;
-  opacity: 0;
-  color: var(--gold);
-  pointer-events: none;
-  mask-image: radial-gradient(ellipse at center, #000 28%, transparent 78%);
-  -webkit-mask-image: radial-gradient(ellipse at center, #000 28%, transparent 78%);
-  transition: opacity 0.6s var(--ease-out);
-}
-
-.archive-item:hover .archive-item__chart {
-  opacity: 0.55;
+  display: none;
 }
 
 /* ---- 档案页脚 ---- */
@@ -640,11 +656,11 @@ html.filter-ready .archive-filter {
 }
 
 .archive-foot__title {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: clamp(1.6rem, 3vw, 2.3rem);
-  font-weight: 400;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+  font-weight: 600;
+  line-height: 1.16;
+  letter-spacing: -0.035em;
   color: var(--ink);
 }
 
@@ -667,14 +683,6 @@ html.filter-ready .archive-filter {
   margin-top: 0.8rem;
 }
 
-/* 金色按钮上的文字用页面底色：浅色主题下是羊皮纸色，深色主题下是墨色，
-   两个方向都能保证对比度（全局 .btn 的深色字在浅色主题里会偏灰） */
-.archive-foot__actions .btn:not(.btn--ghost),
-.about-contact__actions .btn:not(.btn--ghost),
-.error-actions .btn:not(.btn--ghost) {
-  --btn-fg: var(--bg);
-}
-
 /* ==========================================================================
    02. 文章页 /blog/[slug]/
    ========================================================================== */
@@ -693,9 +701,9 @@ html.filter-ready .archive-filter {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(58% 55% at 50% 0%, var(--glow-iris), transparent 66%),
-    radial-gradient(40% 42% at 82% 12%, var(--glow-gold), transparent 62%);
-  opacity: 0.8;
+    radial-gradient(52% 52% at 50% 0%, var(--glow-ice), transparent 66%),
+    radial-gradient(38% 40% at 84% 10%, var(--glow-gold), transparent 62%);
+  opacity: 0.4;
 }
 
 .note-head__grid {
@@ -705,13 +713,13 @@ html.filter-ready .archive-filter {
   pointer-events: none;
   background-image: radial-gradient(
     circle,
-    color-mix(in srgb, var(--gold) 24%, transparent) 0.7px,
-    transparent 0.9px
+    color-mix(in srgb, var(--ink) 26%, transparent) 1px,
+    transparent 1.2px
   );
-  background-size: 24px 24px;
+  background-size: 26px 26px;
   mask-image: linear-gradient(180deg, #000, transparent 64%);
   -webkit-mask-image: linear-gradient(180deg, #000, transparent 64%);
-  opacity: 0.35;
+  opacity: 0.2;
 }
 
 .note-head__inner {
@@ -739,11 +747,11 @@ html.filter-ready .archive-filter {
 
 .note-head__title {
   margin-top: clamp(1.1rem, 2.6vw, 1.9rem);
-  font-family: var(--font-serif);
-  font-size: clamp(2.5rem, 5.4vw, 4.5rem);
-  font-weight: 500;
-  line-height: 1.1;
-  letter-spacing: -0.025em;
+  font-family: var(--font-display);
+  font-size: clamp(2.45rem, 5.2vw, 4.4rem);
+  font-weight: 700;
+  line-height: 1.06;
+  letter-spacing: -0.045em;
   color: var(--ink);
   text-wrap: balance;
 }
@@ -751,10 +759,9 @@ html.filter-ready .archive-filter {
 .note-head__desc {
   max-width: 40rem;
   margin: clamp(1rem, 2vw, 1.4rem) auto 0;
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
-  line-height: 1.72;
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 1.5vw, 1.18rem);
+  line-height: 1.8;
   color: var(--ink-2);
   text-wrap: pretty;
 }
@@ -906,12 +913,13 @@ html.filter-ready .archive-filter {
 
 .prose > p:first-child::first-letter {
   float: left;
-  margin: 0.04em 0.16em 0 0;
+  margin: 0.02em 0.16em 0 0;
   padding-right: 0.02em;
-  font-family: var(--font-serif);
-  font-size: 3.55em;
-  font-weight: 500;
-  line-height: 0.82;
+  font-family: var(--font-display);
+  font-size: 3.4em;
+  font-weight: 700;
+  line-height: 0.8;
+  letter-spacing: -0.04em;
   color: var(--gold);
 }
 
@@ -937,11 +945,11 @@ html.filter-ready .archive-filter {
   margin-bottom: 1.05em;
   padding-bottom: 0.5em;
   border-bottom: 1px solid var(--line-soft);
-  font-family: var(--font-serif);
-  font-size: 1.72rem;
-  font-weight: 600;
-  line-height: 1.35;
-  letter-spacing: -0.01em;
+  font-family: var(--font-display);
+  font-size: 1.68rem;
+  font-weight: 700;
+  line-height: 1.32;
+  letter-spacing: -0.035em;
   color: var(--ink);
   text-align: left;
   scroll-margin-top: calc(var(--header-h) + 28px);
@@ -963,10 +971,11 @@ html.filter-ready .archive-filter {
   margin-bottom: 0.8em;
   padding-left: 0.9rem;
   border-left: 1px solid var(--line-strong);
-  font-family: var(--font-serif);
-  font-size: 1.3rem;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 1.24rem;
+  font-weight: 700;
   line-height: 1.45;
+  letter-spacing: -0.02em;
   color: var(--ink);
   text-align: left;
   scroll-margin-top: calc(var(--header-h) + 28px);
@@ -1030,8 +1039,12 @@ html.filter-ready .archive-filter {
   font-weight: 650;
 }
 
+/* Space Grotesk 没有真斜体文件，合成斜体在中文旁很脏：
+   <em> 改为正常体 + 金色 + 加重，作为行内信号 */
 .prose em {
-  font-style: italic;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--gold-bright);
 }
 
 .prose del {
@@ -1048,13 +1061,13 @@ html.filter-ready .archive-filter {
 .prose blockquote {
   position: relative;
   margin: 2.2em 0;
-  padding: 1.3rem 1.5rem 1.3rem 2rem;
-  border-left: 2px solid var(--gold);
-  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 1.25rem 1.5rem 1.25rem 1.8rem;
+  border-left: 1px solid var(--gold);
+  border-radius: 0;
   background: linear-gradient(120deg, var(--surface), transparent 88%);
-  font-family: var(--font-serif);
-  font-size: 1.14rem;
-  font-style: italic;
+  font-family: var(--font-sans);
+  font-size: 1.1rem;
+  font-weight: 500;
   line-height: 1.85;
   color: var(--ink-2);
 }
@@ -1062,13 +1075,14 @@ html.filter-ready .archive-filter {
 .prose blockquote::before {
   content: '“';
   position: absolute;
-  top: -0.12em;
-  left: 0.5rem;
-  font-family: var(--font-serif);
-  font-size: 3.1rem;
+  top: -0.2em;
+  left: 0.55rem;
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 700;
   line-height: 1;
   color: var(--gold);
-  opacity: 0.32;
+  opacity: 0.22;
   font-style: normal;
 }
 
@@ -1340,16 +1354,16 @@ html.filter-ready .archive-filter {
 /* 复制按钮（由脚本插入到 .code-block 里） */
 .code-copy {
   position: absolute;
-  top: 0.65rem;
-  right: 0.65rem;
+  top: 0.6rem;
+  right: 0.6rem;
   z-index: 2;
-  padding: 0.28rem 0.6rem;
+  padding: 0.3rem 0.6rem;
   border: 1px solid var(--line-soft);
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
   color: var(--pg-label);
   font-family: var(--font-mono);
-  font-size: 0.54rem;
+  font-size: 0.52rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   opacity: 0;
@@ -1404,11 +1418,11 @@ html.filter-ready .archive-filter {
 }
 
 .toc__eyebrow em {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 0.95rem;
-  letter-spacing: 0.02em;
-  text-transform: none;
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 0.56rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
   color: var(--ink-2);
 }
 
@@ -1520,7 +1534,7 @@ html.filter-ready .archive-filter {
   color: var(--pg-label);
 }
 
-/* 作者卡片 */
+/* 作者卡片：反色白面板（浅色主题黑面板）——内页唯一的强对比块 */
 .note-author {
   position: relative;
   display: grid;
@@ -1528,19 +1542,11 @@ html.filter-ready .archive-filter {
   align-items: center;
   gap: 1.1rem 1.5rem;
   padding: clamp(1.2rem, 2.6vw, 1.7rem);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-lg);
-  background: linear-gradient(150deg, var(--surface), transparent 72%);
+  border: 1px solid var(--invert-line);
+  border-radius: 0;
+  background: var(--invert-bg);
+  color: var(--invert-fg);
   overflow: hidden;
-}
-
-.note-author::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(60% 100% at 100% 0%, var(--glow-gold), transparent 62%);
-  opacity: 0.55;
-  pointer-events: none;
 }
 
 .note-author__sigil {
@@ -1550,13 +1556,13 @@ html.filter-ready .archive-filter {
   width: 3.4rem;
   height: 3.4rem;
   flex: none;
-  color: var(--gold);
+  color: var(--gold-on-invert);
 }
 
 .note-author__ring {
   position: absolute;
   inset: 0;
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--invert-line);
   border-radius: 50%;
 }
 
@@ -1564,7 +1570,7 @@ html.filter-ready .archive-filter {
   content: '';
   position: absolute;
   inset: 5px;
-  border: 1px dashed var(--line);
+  border: 1px dashed var(--invert-line-soft);
   border-radius: 50%;
   animation: note-ring-spin 26s linear infinite;
 }
@@ -1588,22 +1594,27 @@ html.filter-ready .archive-filter {
   font-size: 0.52rem;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--gold-on-invert);
 }
 
 .note-author__name {
   margin: 0.18rem 0 0.25rem;
-  font-family: var(--font-serif);
-  font-size: 1.28rem;
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
   line-height: 1.2;
-  color: var(--ink);
+  letter-spacing: -0.03em;
+  color: var(--invert-fg);
 }
 
 .note-author__line {
   font-size: 0.78rem;
   line-height: 1.7;
-  color: var(--pg-label);
+  color: var(--invert-ink-3);
+}
+
+.note-author__date {
+  white-space: nowrap;
 }
 
 .note-author__links {
@@ -1624,12 +1635,12 @@ html.filter-ready .archive-filter {
   font-size: 0.56rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ink-2);
+  color: var(--invert-ink-2);
   transition: color 0.3s var(--ease-out);
 }
 
 .note-author__links a:hover {
-  color: var(--gold-bright);
+  color: var(--ice-on-invert);
   text-decoration: none;
 }
 
@@ -1648,18 +1659,18 @@ html.filter-ready .archive-filter {
   min-height: 8.4rem;
   padding: clamp(1rem, 2.2vw, 1.35rem);
   border: 1px solid var(--line-soft);
-  border-radius: var(--radius);
+  border-radius: 0;
   background: transparent;
   transition:
-    border-color 0.4s var(--ease-out),
-    background 0.4s var(--ease-out),
-    transform 0.4s var(--ease-out);
+    border-color 0.3s var(--ease-out),
+    background 0.3s var(--ease-out),
+    transform 0.3s var(--ease-out);
 }
 
 .note-pager__card:hover {
-  border-color: var(--line);
-  background: var(--surface);
-  transform: translateY(-3px);
+  border-color: var(--line-strong);
+  background: transparent;
+  transform: translateY(-2px);
   text-decoration: none;
 }
 
@@ -1676,10 +1687,11 @@ html.filter-ready .archive-filter {
 }
 
 .note-pager__title {
-  font-family: var(--font-serif);
-  font-size: 1.12rem;
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: 1.14rem;
+  font-weight: 600;
   line-height: 1.4;
+  letter-spacing: -0.02em;
   color: var(--ink);
   transition: color 0.3s var(--ease-out);
 }
@@ -1703,7 +1715,7 @@ html.filter-ready .archive-filter {
   min-height: 8.4rem;
   padding: clamp(1rem, 2.2vw, 1.35rem);
   border: 1px dashed var(--line-soft);
-  border-radius: var(--radius);
+  border-radius: 0;
 }
 
 .note-pager__ghost .note-pager__label {
@@ -1712,10 +1724,10 @@ html.filter-ready .archive-filter {
 
 .note-pager__ghost-text {
   margin-top: auto;
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 0.92rem;
-  line-height: 1.5;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  line-height: 1.6;
+  letter-spacing: 0.06em;
   color: var(--pg-label);
 }
 
@@ -1738,27 +1750,29 @@ html.filter-ready .archive-filter {
 
 .about-hero__title {
   margin-top: clamp(1.2rem, 2.6vw, 1.9rem);
-  font-family: var(--font-serif);
-  font-size: clamp(2.8rem, 6vw, 5.1rem);
-  font-weight: 300;
-  line-height: 1.06;
-  letter-spacing: -0.028em;
+  font-family: var(--font-display);
+  font-size: clamp(2.9rem, 6.2vw, 5.4rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
   color: var(--ink);
 }
 
 .about-hero__title em {
-  font-style: italic;
-  font-weight: 400;
-  color: var(--gold);
+  font-style: normal;
+  font-weight: 700;
+  color: transparent;
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--ink) 82%, transparent);
 }
 
 .about-hero__latin {
   display: block;
-  margin-top: clamp(0.9rem, 1.8vw, 1.3rem);
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: clamp(0.95rem, 1.4vw, 1.15rem);
-  letter-spacing: 0.03em;
+  margin-top: clamp(1rem, 1.8vw, 1.4rem);
+  font-family: var(--font-mono);
+  font-size: clamp(0.58rem, 0.9vw, 0.68rem);
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
   color: var(--pg-label);
 }
 
@@ -1810,10 +1824,11 @@ html.filter-ready .archive-filter {
 }
 
 .about-hero__meta b {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: 1.5rem;
-  font-weight: 300;
+  font-weight: 600;
   line-height: 1;
+  letter-spacing: -0.04em;
   color: var(--ink);
 }
 
@@ -1825,7 +1840,7 @@ html.filter-ready .archive-filter {
   color: var(--pg-label);
 }
 
-/* 星盘「肖像」 */
+/* 「肖像」：不是画像，是一台对着天空的信号调谐盘 */
 .about-portrait {
   position: relative;
   margin: 0;
@@ -1837,14 +1852,11 @@ html.filter-ready .archive-filter {
   place-items: center;
   aspect-ratio: 0.9;
   padding: clamp(1.1rem, 2.4vw, 1.8rem);
-  /* 拱顶窗口：一半星图陈列柜，一半祭坛 */
   border: 1px solid var(--line);
-  border-radius: 45% 45% var(--radius-lg) var(--radius-lg) / 32% 32% var(--radius-lg)
-    var(--radius-lg);
+  border-radius: 0;
   background:
-    radial-gradient(70% 58% at 50% 38%, var(--glow-iris), transparent 66%),
-    radial-gradient(76% 70% at 50% 74%, var(--glow-gold), transparent 66%),
-    linear-gradient(180deg, var(--surface), transparent 78%);
+    radial-gradient(58% 50% at 50% 40%, var(--glow-ice), transparent 68%),
+    radial-gradient(58% 52% at 50% 78%, color-mix(in srgb, var(--gold) 7%, transparent), transparent 66%);
   overflow: hidden;
 }
 
@@ -1854,26 +1866,79 @@ html.filter-ready .archive-filter {
   inset: 0;
   background-image: radial-gradient(
     circle,
-    color-mix(in srgb, var(--gold) 26%, transparent) 0.7px,
-    transparent 0.9px
+    color-mix(in srgb, var(--ink) 24%, transparent) 1px,
+    transparent 1.2px
   );
   background-size: 20px 20px;
   mask-image: radial-gradient(circle at 50% 42%, #000 20%, transparent 74%);
   -webkit-mask-image: radial-gradient(circle at 50% 42%, #000 20%, transparent 74%);
-  opacity: 0.45;
+  opacity: 0.28;
   pointer-events: none;
 }
 
 .about-portrait__art {
   position: relative;
   z-index: 1;
-  width: 96%;
-  filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.28));
+  width: 98%;
 }
 
-.about-portrait__art .astrolabe {
+.about-portrait__art .signal-dial {
   width: 100%;
   height: auto;
+  overflow: visible;
+}
+
+/* 白色线稿，只留一个冰蓝点和一条金色刻度 */
+.signal-dial__line {
+  stroke: color-mix(in srgb, var(--ink) 30%, transparent);
+}
+.signal-dial__line-strong {
+  stroke: color-mix(in srgb, var(--ink) 52%, transparent);
+}
+.signal-dial__soft {
+  stroke: color-mix(in srgb, var(--ink) 15%, transparent);
+  fill: none;
+}
+.signal-dial__ice {
+  stroke: var(--ice);
+  fill: none;
+}
+.signal-dial__ice-dot {
+  fill: var(--ice);
+}
+.signal-dial__gold {
+  stroke: var(--gold);
+  fill: none;
+}
+.signal-dial__gold-dot {
+  fill: var(--gold);
+}
+
+/* 浅色主题下线稿需要更深的墨色才看得清 */
+:root[data-theme='light'] .signal-dial__line {
+  stroke: color-mix(in srgb, var(--ink) 55%, transparent);
+}
+:root[data-theme='light'] .signal-dial__line-strong {
+  stroke: color-mix(in srgb, var(--ink) 78%, transparent);
+}
+:root[data-theme='light'] .signal-dial__soft {
+  stroke: color-mix(in srgb, var(--ink) 34%, transparent);
+}
+.signal-dial__spin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: signal-dial-spin 160s linear infinite;
+}
+.signal-dial__spin-rev {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: signal-dial-spin 220s linear infinite reverse;
+}
+
+@keyframes signal-dial-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .about-portrait__plate {
@@ -1942,7 +2007,7 @@ html.filter-ready .archive-filter {
   height: 1px;
   background-image: radial-gradient(
     circle,
-    color-mix(in srgb, var(--gold) 55%, transparent) 0.8px,
+    color-mix(in srgb, var(--ink) 45%, transparent) 0.8px,
     transparent 1px
   );
   background-size: 5px 1px;
@@ -1975,11 +2040,11 @@ html.filter-ready .archive-filter {
 }
 
 .about-section__head h2 {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: clamp(1.7rem, 2.7vw, 2.25rem);
-  font-weight: 500;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.04em;
   color: var(--ink);
   text-wrap: balance;
 }
@@ -2034,11 +2099,11 @@ html.filter-ready .archive-filter {
 
 .about-prose__lead {
   margin-bottom: 1.05rem;
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: clamp(1.32rem, 2.2vw, 1.72rem);
-  font-weight: 400;
-  line-height: 1.55;
-  letter-spacing: -0.01em;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: -0.035em;
   color: var(--ink);
 }
 
@@ -2110,10 +2175,11 @@ html.filter-ready .archive-filter {
 }
 
 .about-doing__title {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: clamp(1.14rem, 1.9vw, 1.4rem);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.4;
+  letter-spacing: -0.025em;
   color: var(--ink);
 }
 
@@ -2126,9 +2192,9 @@ html.filter-ready .archive-filter {
 
 .about-doing__tag {
   margin-top: 0.35rem;
-  padding: 0.18rem 0.55rem;
+  padding: 0.2rem 0.55rem;
   border: 1px solid var(--line-soft);
-  border-radius: var(--radius-pill);
+  border-radius: 0;
   font-size: 0.5rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -2159,10 +2225,10 @@ html.filter-ready .archive-filter {
 }
 
 .about-chip {
-  padding: 0.3rem 0.68rem;
+  padding: 0.32rem 0.66rem;
   border: 1px solid var(--line-soft);
-  border-radius: var(--radius-pill);
-  background: var(--surface);
+  border-radius: 0;
+  background: transparent;
   font-family: var(--font-mono);
   font-size: 0.56rem;
   letter-spacing: 0.1em;
@@ -2182,8 +2248,8 @@ html.filter-ready .archive-filter {
   margin: 0;
   padding: clamp(1rem, 2vw, 1.4rem);
   border: 1px solid var(--line-soft);
-  border-radius: var(--radius);
-  background: linear-gradient(160deg, var(--surface), transparent 74%);
+  border-radius: 0;
+  background: transparent;
   list-style: none;
 }
 
@@ -2207,9 +2273,11 @@ html.filter-ready .archive-filter {
 }
 
 .about-flow__title {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: 1.12rem;
+  font-weight: 600;
   line-height: 1.25;
+  letter-spacing: -0.02em;
   color: var(--ink);
 }
 
@@ -2228,11 +2296,11 @@ html.filter-ready .archive-filter {
 }
 
 .about-contact__lead {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: clamp(1.55rem, 2.9vw, 2.25rem);
-  font-weight: 400;
-  line-height: 1.35;
-  letter-spacing: -0.015em;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.045em;
   color: var(--ink);
 }
 
@@ -2302,10 +2370,11 @@ html.filter-ready .archive-filter {
 }
 
 .about-signature__line {
-  font-family: var(--font-serif);
-  font-style: italic;
+  font-family: var(--font-display);
   font-size: clamp(1.28rem, 2.4vw, 1.68rem);
-  color: var(--ink-2);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  color: var(--ink);
 }
 
 .about-signature__name {
@@ -2345,10 +2414,10 @@ html.filter-ready .archive-filter {
   aspect-ratio: 1;
   border-radius: 50%;
   background:
-    radial-gradient(circle, var(--glow-iris) 0%, transparent 62%),
-    radial-gradient(circle at 62% 62%, var(--glow-gold) 0%, transparent 60%);
-  filter: blur(6px);
-  opacity: 0.95;
+    radial-gradient(circle at 46% 46%, var(--glow-ice) 0%, transparent 58%),
+    radial-gradient(circle at 60% 64%, color-mix(in srgb, var(--gold) 8%, transparent) 0%, transparent 56%);
+  filter: blur(20px);
+  opacity: 0.32;
 }
 
 .error-orbit {
@@ -2362,7 +2431,7 @@ html.filter-ready .archive-filter {
 .error-orbit--outer {
   width: min(78vw, 620px);
   aspect-ratio: 1;
-  border-color: color-mix(in srgb, var(--gold) 13%, transparent);
+  border-color: var(--line);
   animation: error-spin 64s linear infinite;
 }
 
@@ -2370,38 +2439,40 @@ html.filter-ready .archive-filter {
   width: min(60vw, 468px);
   aspect-ratio: 1;
   border-style: dashed;
-  border-color: color-mix(in srgb, var(--gold) 24%, transparent);
+  border-color: var(--line-soft);
   animation: error-spin 46s linear infinite reverse;
 }
 
 .error-orbit--inner {
   width: min(42vw, 326px);
   aspect-ratio: 1;
-  border-color: color-mix(in srgb, var(--iris) 20%, transparent);
+  border-color: var(--line-soft);
   animation: error-spin 32s linear infinite;
 }
 
+/* 外环上的一条金色刻度 */
 .error-orbit__dot {
   position: absolute;
-  top: -3px;
+  top: -6px;
   left: 50%;
-  width: 6px;
-  height: 6px;
-  margin-left: -3px;
-  border-radius: 50%;
+  width: 1px;
+  height: 12px;
+  margin-left: -0.5px;
+  border-radius: 0;
   background: var(--gold);
-  box-shadow:
-    0 0 12px var(--gold),
-    0 0 30px var(--glow-gold);
+  box-shadow: none;
 }
 
+/* 中环上的一颗冰蓝点 */
 .error-orbit__dot--iris {
   top: auto;
   bottom: -2.5px;
   width: 5px;
   height: 5px;
-  background: var(--iris);
-  box-shadow: 0 0 12px var(--iris);
+  margin-left: 0;
+  border-radius: 50%;
+  background: var(--ice);
+  box-shadow: 0 0 10px var(--glow-ice);
 }
 
 .error-orbit__dot--small {
@@ -2410,8 +2481,8 @@ html.filter-ready .archive-filter {
   left: 28%;
   width: 3px;
   height: 3px;
-  background: var(--gold-bright);
-  box-shadow: 0 0 8px var(--gold);
+  background: var(--ink-2);
+  box-shadow: none;
 }
 
 @keyframes error-spin {
@@ -2422,9 +2493,10 @@ html.filter-ready .archive-filter {
 
 .error-spark {
   position: absolute;
-  font-size: 0.7rem;
-  color: var(--gold);
-  opacity: 0.4;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--line-strong);
+  opacity: 0.6;
   animation: error-twinkle 6.5s ease-in-out infinite;
 }
 
@@ -2474,7 +2546,7 @@ html.filter-ready .archive-filter {
 }
 
 .error-page__eyebrow {
-  color: var(--gold);
+  color: var(--ink-2);
 }
 
 .error-code {
@@ -2482,26 +2554,24 @@ html.filter-ready .archive-filter {
   justify-content: center;
   gap: 0.01em;
   margin: clamp(1.1rem, 2.6vw, 1.8rem) 0 0;
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: clamp(6.6rem, 24vw, 17rem);
-  font-weight: 300;
-  line-height: 0.82;
-  letter-spacing: 0.015em;
+  font-weight: 700;
+  line-height: 0.8;
+  letter-spacing: -0.02em;
   color: transparent;
-  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--gold) 62%, transparent);
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--ink) 76%, transparent);
   user-select: none;
 }
 
-/* 浅色主题里描边会被羊皮纸底吃掉，加深一点才站得住 */
+/* 浅色主题里描边改用更实的墨色，保证纯白底上站得住 */
 :root[data-theme='light'] .error-code {
-  -webkit-text-stroke-color: color-mix(in srgb, var(--gold) 88%, transparent);
+  -webkit-text-stroke-color: color-mix(in srgb, var(--ink) 72%, transparent);
 }
 
 .error-code span {
   display: inline-block;
-  animation: error-float 9s ease-in-out infinite;
 }
-
 .error-code span:nth-child(2) {
   animation-delay: -3s;
 }
@@ -2522,15 +2592,17 @@ html.filter-ready .archive-filter {
 
 .error-quote {
   margin-top: clamp(1.3rem, 3vw, 2rem);
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: clamp(1.3rem, 2.6vw, 1.85rem);
-  font-weight: 400;
-  line-height: 1.5;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: -0.035em;
   color: var(--ink);
 }
 
 .error-quote em {
-  font-style: italic;
+  font-style: normal;
+  font-weight: 600;
   color: var(--gold);
 }
 
@@ -2621,11 +2693,11 @@ html.filter-ready .archive-filter {
   align-items: baseline;
   gap: 0.1rem;
   margin-top: 0.5rem;
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: clamp(1.65rem, 3vw, 2.15rem);
-  font-weight: 500;
-  line-height: 1.15;
-  letter-spacing: -0.015em;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
   color: var(--ink);
 }
 
@@ -2639,9 +2711,9 @@ html.filter-ready .archive-filter {
 }
 
 .comments__hint {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 0.92rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
   color: var(--pg-label);
 }
 
@@ -2668,15 +2740,13 @@ html.filter-ready .archive-filter {
   color: var(--ok);
 }
 
-/* 留言卡片 */
+/* 留言卡片：硬边 + 发丝线，hover 只提亮边框 */
 .comment {
   padding: clamp(0.95rem, 2vw, 1.2rem) clamp(1rem, 2.2vw, 1.3rem);
   border: 1px solid var(--line-soft);
-  border-radius: var(--radius);
-  background: linear-gradient(160deg, var(--surface), transparent 80%);
-  transition:
-    border-color 0.4s var(--ease-out),
-    background 0.4s var(--ease-out);
+  border-radius: 0;
+  background: transparent;
+  transition: border-color 0.3s var(--ease-out);
 }
 
 .comment:hover {
@@ -2692,10 +2762,11 @@ html.filter-ready .archive-filter {
 }
 
 .comment-name {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: 1.02rem;
   font-weight: 600;
   line-height: 1.4;
+  letter-spacing: -0.02em;
   color: var(--ink);
 }
 
@@ -2718,9 +2789,9 @@ html.filter-ready .archive-filter {
 
 .comment-delete {
   margin-left: auto;
-  padding: 0.16rem 0.55rem;
+  padding: 0.18rem 0.55rem;
   border: 1px solid var(--line-soft);
-  border-radius: var(--radius-pill);
+  border-radius: 0;
   background: transparent;
   font-family: var(--font-mono);
   font-size: 0.52rem;
@@ -2745,14 +2816,14 @@ html.filter-ready .archive-filter {
   color: var(--pg-body);
 }
 
-/* 发表表单 */
+/* 发表表单：硬边面板，信号色只出现在光晕和按钮反馈上 */
 .comment-form {
   position: relative;
   margin-top: clamp(1.5rem, 3vw, 2.1rem);
   padding: clamp(1.15rem, 2.6vw, 1.7rem);
   border: 1px solid var(--line-soft);
-  border-radius: var(--radius-lg);
-  background: linear-gradient(150deg, var(--surface), transparent 74%);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--bg-2) 72%, transparent);
   overflow: hidden;
 }
 
@@ -2760,8 +2831,8 @@ html.filter-ready .archive-filter {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(64% 96% at 100% 0%, var(--glow-gold), transparent 62%);
-  opacity: 0.55;
+  background: radial-gradient(64% 96% at 100% 0%, var(--glow-ice), transparent 62%);
+  opacity: 0.18;
   pointer-events: none;
 }
 
@@ -2784,10 +2855,9 @@ html.filter-ready .archive-filter {
 }
 
 .comment-hint {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 0.78rem;
-  letter-spacing: 0;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
   text-transform: none;
   color: var(--pg-label);
 }
@@ -2850,25 +2920,28 @@ html.filter-ready .archive-filter {
   gap: 2.1rem;
   min-height: 48px;
   padding: 0 1rem 0 1.25rem;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  background: var(--gold);
-  /* 用 --bg 当文字色：深色主题下是深墨、浅色主题下是羊皮纸，两个方向都够对比 */
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: var(--ink);
   color: var(--bg);
-  font-family: var(--font-sans);
-  font-size: 0.86rem;
-  font-weight: 650;
-  letter-spacing: 0.06em;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   transition:
     background 0.25s var(--ease-out),
-    transform 0.25s var(--ease-out),
-    box-shadow 0.3s var(--ease-out);
+    border-color 0.25s var(--ease-out),
+    color 0.25s var(--ease-out),
+    transform 0.25s var(--ease-out);
 }
 
 .comment-submit:hover:not(:disabled) {
-  background: var(--gold-bright);
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--bg);
   transform: translateY(-2px);
-  box-shadow: 0 14px 34px -18px var(--gold);
+  box-shadow: none;
 }
 
 .comment-submit:disabled {
@@ -2936,6 +3009,7 @@ html.filter-ready .archive-filter {
 
   .note-aside {
     position: static;
+    align-self: stretch;
     order: -1;
     margin: 0 0 clamp(1.8rem, 3vw, 2.4rem);
   }
@@ -2978,11 +3052,10 @@ html.filter-ready .archive-filter {
   }
 
   .toc__summary-cn {
-    font-family: var(--font-serif);
-    font-size: 0.95rem;
-    font-style: italic;
-    letter-spacing: 0.02em;
-    text-transform: none;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
     color: var(--ink-2);
   }
 
@@ -3329,23 +3402,22 @@ html.filter-ready .archive-filter {
 @media (prefers-reduced-motion: reduce) {
   .note-author__ring::before,
   .error-orbit,
-  .error-code span,
   .error-spark,
-  .archive-hero__sigil {
+  .archive-hero__sigil,
+  .signal-dial__spin,
+  .signal-dial__spin-rev {
     animation: none;
   }
 
   .archive-item,
-  .archive-item__link::before,
-  .archive-item__link::after,
-  .archive-item__chart,
+  .archive-item__link,
   .toc__progress-bar {
     transition: none;
   }
 }
 
 /* ---------------------------------------------------------------------------
-   统计数字：Cormorant 默认是旧式数字（1 像 I），统一改成等高数字提高可读性
+   统计数字：统一使用等高数字，避免旧式数字里 1 像 I
    --------------------------------------------------------------------------- */
 .archive-stat dd,
 .about-hero__meta b {

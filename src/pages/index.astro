@@ -2,10 +2,9 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/Hero.astro';
-import PostCard from '../components/PostCard.astro';
 import StarChart from '../components/StarChart.astro';
 import { SITE } from '../site.config';
-import { formatDate, isoDate } from '../utils';
+import { formatDate, isoDate, readingTime } from '../utils';
 
 const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
@@ -13,31 +12,36 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
 const recent = posts.slice(0, SITE.homePostCount);
 const [feature, ...rest] = recent;
 const tagCount = new Set(posts.flatMap((post) => post.data.tags)).size;
+const totalMinutes = posts.reduce((sum, post) => sum + readingTime(post.body ?? '').minutes, 0);
+
+/** 列表里的编号：最新一篇编号最大 */
+const noOf = (post: (typeof posts)[number]) =>
+  String(posts.length - posts.findIndex((item) => item.id === post.id)).padStart(2, '0');
 
 const marqueeItems = [
   SITE.titleEn,
   SITE.nameCn,
-  `EST. ${SITE.since}`,
+  'SIGNAL 001',
   'KNOWLEDGE · CURIOSITY · INFINITY',
-  '写代码 · 看星星 · 记想法',
-  'NOTES FROM THE EDGE OF THE UNIVERSE',
-  'A PERSONAL ATLAS',
+  '在代码与群星之间',
+  'UESTC · CHENGDU',
+  `EST. ${SITE.since}`,
 ];
 ---
 
 <BaseLayout>
   <Hero />
 
-  <!-- 滚动字幕带 -->
+  <!-- 反色信号带 -->
   <div class="marquee" aria-hidden="true">
     <div class="marquee__track">
       {
-        [0, 1].map((group) => (
+        [0, 1].map(() => (
           <div class="marquee__group">
             {marqueeItems.map((item) => (
               <span class="marquee__item">
                 <span class="spark">✦</span>
-                {item.includes('·') ? <strong>{item}</strong> : item}
+                {item.includes('·') || item === SITE.titleEn ? <strong>{item}</strong> : item}
               </span>
             ))}
           </div>
@@ -46,10 +50,10 @@ const marqueeItems = [
     </div>
   </div>
 
-  <!-- 01 / 最近写的东西 -->
+  <!-- 01 / 最近写的东西：目录式索引 -->
   <section class="section" id="recent">
     <div class="wrap">
-      <div class="section-head" data-reveal>
+      <div class="section-head" data-reveal="fade">
         <div class="section-head__title">
           <span class="index-num" aria-hidden="true">01</span>
           <div>
@@ -65,36 +69,51 @@ const marqueeItems = [
       {
         feature ? (
           <>
-            <a class="notes-feature" href={`/blog/${feature.id}/`} data-reveal data-cursor="阅读">
-              <span class="corners" aria-hidden="true"></span>
-              <div class="notes-feature__body">
-                <div class="notes-feature__meta">
-                  <span class="feature-label">LATEST NOTE</span>
+            <a class="entry entry--feature" href={`/blog/${feature.id}/`} data-reveal data-cursor="阅读">
+              <span class="entry__no mono" aria-hidden="true">NO. {noOf(feature)}</span>
+              <div class="entry__body">
+                <p class="entry__meta mono">
+                  <span class="entry__latest">LATEST</span>
                   <time datetime={isoDate(feature.data.pubDate)}>{formatDate(feature.data.pubDate)}</time>
                   <span aria-hidden="true">/</span>
-                  <span>NO. {String(posts.length).padStart(2, '0')}</span>
-                </div>
-                <h3>{feature.data.title}</h3>
-                <p class="notes-feature__desc">{feature.data.description}</p>
-                <div class="notes-feature__foot">
-                  <span class="tag-list">
-                    {feature.data.tags.slice(0, 4).map((tag) => <span class="tag-pill">{tag}</span>)}
-                  </span>
-                  <span class="read-more">READ THE NOTE <span aria-hidden="true">↗</span></span>
-                </div>
+                  <span>{readingTime(feature.body ?? '').minutes} MIN READ</span>
+                </p>
+                <h3 class="entry__title">{feature.data.title}</h3>
+                <p class="entry__desc">{feature.data.description}</p>
+                <span class="entry__read mono">
+                  READ THE NOTE <span aria-hidden="true">↗</span>
+                </span>
               </div>
-              <div class="notes-feature__art" aria-hidden="true">
+              <div class="entry__figure" aria-hidden="true">
                 <StarChart seed={feature.data.title} />
-                <span class="art-caption">FIG. {formatDate(feature.data.pubDate)}</span>
+                <span class="entry__figure-label">FIG. 01 / SIGNAL</span>
               </div>
+              <span class="entry__arrow" aria-hidden="true">↗</span>
             </a>
 
             {rest.length > 0 && (
-              <ul class="note-grid">
+              <ol class="entry-list">
                 {rest.map((post, i) => (
-                  <PostCard post={post} index={i + 2} />
+                  <li>
+                    <a
+                      class="entry"
+                      href={`/blog/${post.id}/`}
+                      data-reveal
+                      data-cursor="阅读"
+                      style={`--reveal-delay:${Math.min(i * 0.06, 0.24)}s`}>
+                      <span class="entry__no mono" aria-hidden="true">{noOf(post)}</span>
+                      <time class="entry__date mono" datetime={isoDate(post.data.pubDate)}>
+                        {formatDate(post.data.pubDate)}
+                      </time>
+                      <h3 class="entry__title">{post.data.title}</h3>
+                      <span class="entry__tags mono" aria-hidden="true">
+                        {post.data.tags.slice(0, 3).join(' / ')}
+                      </span>
+                      <span class="entry__arrow" aria-hidden="true">↗</span>
+                    </a>
+                  </li>
                 ))}
-              </ul>
+              </ol>
             )}
           </>
         ) : (
@@ -111,10 +130,10 @@ const marqueeItems = [
     </div>
   </section>
 
-  <!-- 02 / 关于这间观测站 -->
-  <section class="section" id="about">
+  <!-- 02 / 关于这间观测站：反色区 -->
+  <section class="section section--invert" id="about">
     <div class="wrap">
-      <div class="section-head" data-reveal>
+      <div class="section-head" data-reveal="fade">
         <div class="section-head__title">
           <span class="index-num" aria-hidden="true">02</span>
           <div>
@@ -130,11 +149,12 @@ const marqueeItems = [
       <div class="manifesto">
         <div data-reveal>
           <p class="manifesto__lead">
-            一边写代码，一边<em>收集星光</em>。这里是我的私人星图<span class="star-accent" aria-hidden="true">✦</span>
+            一边写代码，一边<em>收集星光</em>。<br />
+            这里是我的私人星图<span class="star-accent" aria-hidden="true">✦</span>
           </p>
           <div class="manifesto__body">
             <p>
-              你好，我是 {SITE.author}，目前在电子科技大学（清水河校区）读书。这个博客用来放技术笔记、学习记录，
+              你好，我是 {SITE.author}，目前在 UESTC 读书。这个博客用来放技术笔记、学习记录，
               以及偶尔冒出来的想法 —— 写清楚，才算真的懂了。
             </p>
             <p>
@@ -156,7 +176,7 @@ const marqueeItems = [
             </div>
             <div class="log-row">
               <dt>STACK</dt>
-              <dd>Astro · Azure Static Web Apps · Sveltia CMS</dd>
+              <dd>Astro · Azure SWA · Sveltia CMS</dd>
             </div>
             <div class="log-row">
               <dt>WRITING</dt>
@@ -164,7 +184,7 @@ const marqueeItems = [
             </div>
             <div class="log-row">
               <dt>SIGNAL</dt>
-              <dd><span class="clock" data-clock data-tz={SITE.timeZone}>--:--:--</span> <span class="muted">CST · 北京时间</span></dd>
+              <dd><span class="clock" data-clock data-tz={SITE.timeZone}>--:--:--</span> <span class="muted">{SITE.clockLabel} · 北京时间</span></dd>
             </div>
           </dl>
 
@@ -178,8 +198,8 @@ const marqueeItems = [
               <span class="stat__label">Tags</span>
             </div>
             <div class="stat">
-              <span class="stat__value">∞</span>
-              <span class="stat__label">Curiosity</span>
+              <span class="stat__value">{totalMinutes}<sup>分</sup></span>
+              <span class="stat__label">Reading</span>
             </div>
           </div>
         </div>
@@ -187,17 +207,14 @@ const marqueeItems = [
     </div>
   </section>
 
-  <!-- 档案库入口 -->
-  <div class="wrap">
-    <section class="home-cta" data-reveal>
-      <div class="home-cta__text">
-        <h2>想看看更早的<em>星尘</em>？</h2>
-        <p>全部文章都收在档案库里，按时间排列，可以慢慢翻。</p>
-      </div>
-      <a class="btn" href="/blog/" data-magnetic>
-        进入档案库
-        <span class="btn-arrow" aria-hidden="true">↗</span>
+  <!-- 档案入口 -->
+  <section class="home-cta">
+    <div class="wrap">
+      <a class="home-cta__link" href="/blog/" data-magnetic>
+        <span class="home-cta__kicker mono">THE COMPLETE ARCHIVE — {posts.length} NOTES</span>
+        <span class="home-cta__title">全部<em>文章</em><span class="home-cta__arrow" aria-hidden="true">↗</span></span>
+        <span class="home-cta__meta mono">按时间排列 / RSS 订阅 / 慢慢翻</span>
       </a>
-    </section>
-  </div>
+    </div>
+  </section>
 </BaseLayout>

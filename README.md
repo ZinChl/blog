@@ -94,23 +94,25 @@ npm run preview   # 预览构建结果
 
 ## 前端设计（2026.10 重做）
 
-整站视觉重做为「**21nc · 星海档案 / THE ASTRAL ARCHIVE**」：深空墨蓝 + 暖金 + 鸢尾紫，
-衬线大标题 + 等宽小标签 + 星盘线稿 + 细颗粒质感；深色为默认，右上角可切到羊皮纸浅色主题。
+整站视觉是「**21NC · SIGNAL**」：**纯黑画布 + 黑白主色**，只保留两个信号色 ——
+暖金 `#E6B45F` 与冰蓝 `#9FE6FF`。Space Grotesk 巨字标 + JetBrains Mono 元信息 +
+系统中文无衬线；直角、发丝线、目录式索引、反色白带。深色为默认，右上角可切到纯白浅色主题。
 
 - **设计令牌**：`src/styles/tokens.css`（颜色、字体、间距、缓动都在这里；改主题只动这一个文件）
-- **样式分层**：`site.css`（页头页脚/跑马灯/转场）、`hero.css`（首屏与星盘）、
-  `home.css`（首页卡片/自述）、`pages.css`（列表页/文章页/关于/404/留言）；入口是 `global.css`
-- **字体**：西文自托管 Cormorant Garamond（标题）与 JetBrains Mono（元信息），
-  文件在 `public/fonts/`；中文使用系统衬线/无衬线回退，不额外下载中文字体
+- **样式分层**：`site.css`（页头页脚/反色跑马灯/转场）、`hero.css`（纯黑首屏 + 轨道字标）、
+  `home.css`（目录式索引 / 反色自述区 / 档案入口）、`pages.css`（列表页/文章页/关于/404/留言）
+- **字体**：西文自托管 Space Grotesk（展示）与 JetBrains Mono（元信息），文件在 `public/fonts/`；
+  中文使用系统无衬线回退，不额外下载中文字体
 - **动效**：`src/scripts/motion.ts`（滚动显现、Lenis 平滑滚动、实时时钟、磁吸按钮、滚动进度），
-  `components/Starfield.astro`（手写 WebGL 星场，`prefers-reduced-motion` / 低性能自动降级）、
-  `components/Cursor.astro`（桌面端自定义光标）
-- **装饰图形**：`components/Astrolabe.astro`（星盘）、`components/StarChart.astro`
-  （按文章标题生成的确定性星图），全部为 SVG / CSS，无位图依赖
-- **首屏底图**：Hubble Ultra Deep Field，NASA / STScI（公有领域，页脚已标注）
-- **主题预览**：任意页面加 `?theme=light` 或 `?theme=dark`，方便分享某一种配色
-- **可访问性**：键盘焦点可见、`prefers-reduced-motion` 全量降级、无 JS 时内容完整可见；
-  首页 Lighthouse：Accessibility / Best Practices / SEO = 100
+  `components/Starfield.astro`（手写 WebGL 星场，已调成黑白星点 + 极少量金/冰蓝信号，
+  `prefers-reduced-motion` / 低性能自动降级）、`components/Cursor.astro`（桌面端自定义光标，
+  按钮悬停时粒子散开 / 聚合）
+- **装饰图形**：关于页的内联「信号调谐盘」、`components/StarChart.astro`
+  （按文章标题生成的确定性星图）、`components/Starfield.astro` 星场，全部为 SVG / WebGL，无位图依赖
+- **首屏**：纯黑底 + 巨大「21 / 空心 NC」字标 + 十字轨道线 + 一颗金点、一颗冰蓝点，没有任何位图
+- **主题预览**：任意页面加 `?theme=light` 或 `?theme=dark`；浅色是纯白纸面 + 黑字，
+  反色章节与跑马灯会在黑白之间互换
+- **可访问性**：键盘焦点可见、`prefers-reduced-motion` 全量降级、无 JS 时内容完整可见
 
 > 新增文章不需要改任何样式：列表页、文章页会自动套用新的排版。
 > 想换配色/字体，从 `tokens.css` 改起。
@@ -125,9 +127,9 @@ npm run preview   # 预览构建结果
 │   ├── host.json
 │   └── package.json
 ├── public/
-│   ├── fonts/                  # 自托管西文字体（Cormorant / JetBrains Mono）
-│   ├── images/                 # 文章配图 + hero 星云底图
-│   ├── favicon.svg             # 金色星盘图标
+│   ├── fonts/                  # 自托管西文字体（Space Grotesk / JetBrains Mono）
+│   ├── images/                 # 文章配图
+│   ├── favicon.svg             # 黑白信号标（金 / 冰蓝点）
 │   ├── og.jpg                  # 社交分享卡片（1200×630）
 │   ├── robots.txt              # 不收录 /admin/
 │   ├── staticwebapp.config.json # 指定 node:20 运行时

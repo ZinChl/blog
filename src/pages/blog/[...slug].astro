@@ -149,7 +149,9 @@ const socialIcon = (icon: string) =>
               <p class="note-author__name serif">{SITE.author}</p>
               <p class="note-author__line">
                 {SITE.tagline} <span aria-hidden="true">·</span> {SITE.city}{' '}
-                <span aria-hidden="true">·</span> {formatDate(pubDate)}
+                <span class="note-author__date">
+                  <span aria-hidden="true">·</span> {formatDate(pubDate)}
+                </span>
               </p>
             </div>
             <ul class="note-author__links" aria-label="联系作者">
