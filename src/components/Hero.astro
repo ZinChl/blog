@@ -1,0 +1,150 @@
+---
+import Astrolabe from './Astrolabe.astro';
+import Starfield from './Starfield.astro';
+import Icon from './Icon.astro';
+import { SITE } from '../site.config';
+
+/**
+ * 首页 hero：星野画布（稍后由 Starfield 组件挂载）+ 星盘 + 动效标题。
+ */
+const socialIcon = (icon: string) =>
+  icon === 'github' ? 'github' : icon === 'email' ? 'email' : icon === 'rss' ? 'rss' : 'link';
+const eyebrowParts = SITE.hero.eyebrow.split('');
+const titleChars = SITE.title.split('');
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-bg" aria-hidden="true">
+    <Starfield class="hero-starfield" density={1} parallax={true} />
+    <picture class="hero-nebula">
+      <source media="(max-width: 680px)" srcset="/images/deep-field-mobile.webp" />
+      <img
+        src="/images/deep-field.webp"
+        alt=""
+        width="1600"
+        height="900"
+        fetchpriority="high"
+        decoding="async"
+      />
+    </picture>
+    <div class="hero-veil"></div>
+    <div class="hero-stars-css"></div>
+    <!-- 星野画布由 <Starfield /> 在集成时挂载到这里 -->
+    <div class="hero-halo"></div>
+    <div class="hero-gridlines"></div>
+  </div>
+
+  <div class="hero-inner wrap">
+    <div class="hero-copy">
+      <p class="hero-eyebrow eyebrow">
+        <span>{eyebrowParts.join('')}</span>
+        <span class="eyebrow-rule" aria-hidden="true"></span>
+        <span class="eyebrow-year">{SITE.hero.year}</span>
+      </p>
+
+      <h1 class="hero-title" id="hero-title">
+        <span class="hero-title__inner">
+          {titleChars.slice(0, -2).join('')}<span class="hero-title__accent">{titleChars.slice(-2).join('')}</span>
+        </span>
+      </h1>
+
+      <p class="hero-subtitle">
+        <span class="hero-subtitle__cn">{SITE.nameCn}</span>
+        <span class="hero-subtitle__en">{SITE.hero.subtitleEn}</span>
+      </p>
+
+      <p class="hero-desc">{SITE.hero.description}</p>
+
+      <div class="hero-actions">
+        <a class="btn" href="#recent" data-magnetic>
+          {SITE.hero.primaryCta}
+          <span class="btn-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a class="link-underline" href="/about/">
+          关于这间观测站
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <ul class="hero-socials" aria-label="社交链接">
+        {
+          SITE.social.map((item) => (
+            <li>
+              <a href={item.href} rel="me noopener" target={item.href.startsWith('http') ? '_blank' : undefined}>
+                <Icon name={socialIcon(item.icon)} size={13} />
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <a href="/rss.xml">
+            <Icon name="rss" size={13} />
+            RSS
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="hero-figure">
+      <div class="hero-figure__parallax" data-hero-parallax>
+        <Astrolabe />
+      </div>
+      <div class="hero-figure__caption" aria-hidden="true">
+        <b>FIG. 01</b>
+        <i></i>
+        <span>THE ASTRAL ARCHIVE</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-rail wrap">
+    <div class="hero-rail__group">
+      <span class="hero-rail__item"><span class="spark" aria-hidden="true">✳</span> KNOWLEDGE · CURIOSITY · INFINITY</span>
+      <span class="hero-rail__item"><b>{SITE.title.toUpperCase()}</b> / {SITE.nameCn}</span>
+    </div>
+    <div class="hero-rail__group">
+      <span class="hero-rail__item">{SITE.location}</span>
+      <span class="hero-rail__item">{SITE.coords}</span>
+      <span class="hero-rail__item"><span class="clock" data-clock data-tz={SITE.timeZone}>--:--:--</span> LCL</span>
+    </div>
+    <div class="hero-rail__group">
+      <a class="hero-scroll" href="#recent">
+        SCROLL TO UNFOLD
+        <span class="hero-scroll__line" aria-hidden="true"></span>
+        <Icon name="arrow-down" size={11} />
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // 星盘随鼠标轻微视差 —— 只在精细指针 + 非降级动效时启用
+    (() => {
+      const figure = document.querySelector<HTMLElement>('[data-hero-parallax]');
+      const hero = document.querySelector<HTMLElement>('.hero');
+      if (!figure || !hero) return;
+      if (!window.matchMedia('(pointer: fine)').matches) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      let raf = 0;
+      let targetX = 0;
+      let targetY = 0;
+      const apply = () => {
+        raf = 0;
+        figure.style.setProperty('--hero-px', `${targetX.toFixed(2)}px`);
+        figure.style.setProperty('--hero-py', `${targetY.toFixed(2)}px`);
+      };
+      hero.addEventListener('pointermove', (event) => {
+        const rect = hero.getBoundingClientRect();
+        targetX = ((event.clientX - rect.left) / rect.width - 0.5) * -18;
+        targetY = ((event.clientY - rect.top) / rect.height - 0.5) * -14;
+        if (!raf) raf = requestAnimationFrame(apply);
+      });
+      hero.addEventListener('pointerleave', () => {
+        targetX = 0;
+        targetY = 0;
+        if (!raf) raf = requestAnimationFrame(apply);
+      });
+    })();
+  </script>
+</section>

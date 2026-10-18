@@ -1,0 +1,343 @@
+---
+/**
+ * Cursor.astro —「星海档案」自定义光标
+ * ---------------------------------------------------------------------------
+ * 仅对精确指针（鼠标 / 触控板）启用：金色小圆点 + 滞后的描边圆环。
+ * 悬停 a / button / [data-cursor] 时圆环放大；若元素带 data-cursor="阅读"
+ * 之类的文案，会在光标右下浮出一枚小标签。
+ *
+ * - (pointer: coarse) 触屏设备 / prefers-reduced-motion：完全隐藏，不挂任何监听；
+ * - 组件 aria-hidden，不进入无障碍树，也不接管键盘焦点；
+ * - 输入框 / 文本域保留系统光标，不影响输入；
+ * - 支持 Astro ClientRouter 的 astro:page-load 重新初始化。
+ *
+ * 使用：在 <BaseLayout> 的 <body> 末尾放一次 <Cursor /> 即可。
+ */
+---
+
+<div class="cursor" data-cursor-root aria-hidden="true">
+  <div class="cursor-dot" data-cursor-dot></div>
+  <div class="cursor-ring" data-cursor-ring>
+    <span class="cursor-label" data-cursor-label></span>
+  </div>
+</div>
+
+<style>
+  .cursor {
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .cursor.is-visible {
+    opacity: 1;
+  }
+
+  .cursor-dot,
+  .cursor-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translate3d(var(--cx, -50vw), var(--cy, -50vh), 0);
+    will-change: transform;
+  }
+
+  /* 金色小圆点：几乎实时跟随 */
+  .cursor-dot {
+    width: 5px;
+    height: 5px;
+    margin: -2.5px 0 0 -2.5px;
+    border-radius: 50%;
+    background: var(--gold, #d6b36a);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--gold, #d6b36a) 55%, transparent);
+    transition:
+      transform 0.18s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
+      opacity 0.25s ease,
+      scale 0.25s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+  }
+
+  /* 滞后的描边圆环 */
+  .cursor-ring {
+    width: 30px;
+    height: 30px;
+    margin: -15px 0 0 -15px;
+    border: 1px solid color-mix(in srgb, var(--gold, #d6b36a) 55%, transparent);
+    border-radius: 50%;
+    transition:
+      width 0.32s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
+      height 0.32s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
+      margin 0.32s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
+      border-color 0.32s ease,
+      background-color 0.32s ease,
+      opacity 0.25s ease;
+  }
+
+  /* 悬停可交互元素：圆环放大、变金；圆点缩小 */
+  .cursor.is-hover .cursor-ring {
+    width: 52px;
+    height: 52px;
+    margin: -26px 0 0 -26px;
+    border-color: var(--gold-bright, #f0d9a6);
+    background: color-mix(in srgb, var(--gold, #d6b36a) 8%, transparent);
+  }
+  .cursor.is-hover .cursor-dot {
+    scale: 0.5;
+    opacity: 0.6;
+  }
+
+  /* 按下时轻微收缩 */
+  .cursor.is-down .cursor-ring {
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+  }
+  .cursor.is-down.is-hover .cursor-ring {
+    width: 44px;
+    height: 44px;
+    margin: -22px 0 0 -22px;
+  }
+
+  /* 悬停标签（例如 data-cursor="阅读"） */
+  .cursor-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(18px, 14px);
+    display: inline-block;
+    padding: 0.28rem 0.55rem;
+    border: 1px solid var(--line-strong, rgba(214, 179, 106, 0.34));
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--bg, #070a14) 84%, transparent);
+    color: var(--ink, #ece7db);
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.58rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    line-height: 1;
+    white-space: nowrap;
+    opacity: 0;
+    translate: 0 4px;
+    transition:
+      opacity 0.28s ease,
+      translate 0.28s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+  }
+  .cursor.is-labelled .cursor-label {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  /* 触屏 / 减少动态：整颗光标不渲染（JS 也会直接跳过初始化） */
+  @media (pointer: coarse), (prefers-reduced-motion: reduce) {
+    .cursor {
+      display: none;
+    }
+  }
+
+  /* 隐藏系统光标（保留输入控件与文本选择场景） */
+  :global(html.has-custom-cursor),
+  :global(html.has-custom-cursor *) {
+    cursor: none !important;
+  }
+  :global(html.has-custom-cursor input),
+  :global(html.has-custom-cursor textarea),
+  :global(html.has-custom-cursor select),
+  :global(html.has-custom-cursor [contenteditable='true']) {
+    cursor: auto !important;
+  }
+</style>
+
+<script>
+  interface CursorState {
+    destroy: () => void;
+  }
+
+  const FINE_POINTER = '(pointer: fine)';
+  const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const fineQuery = window.matchMedia(FINE_POINTER);
+
+  /** 可交互元素选择器：命中后圆环放大；带 data-cursor 的还会浮出标签 */
+  const HOVER_SELECTOR = 'a, button, [role="button"], [data-cursor], summary, label[for]';
+  /** 这些元素上不接管光标，保留系统行为 */
+  const NATIVE_SELECTOR = 'input, textarea, select, [contenteditable="true"]';
+
+  let instance: CursorState | null = null;
+
+  function bootCursor(): void {
+    instance?.destroy();
+    instance = null;
+
+    const root = document.querySelector<HTMLElement>('[data-cursor-root]');
+    if (!root) return;
+    if (!fineQuery.matches || reduceQuery.matches) {
+      root.classList.remove('is-visible');
+      return;
+    }
+
+    const dot = root.querySelector<HTMLElement>('[data-cursor-dot]');
+    const ring = root.querySelector<HTMLElement>('[data-cursor-ring]');
+    const label = root.querySelector<HTMLElement>('[data-cursor-label]');
+    if (!dot || !ring) return;
+
+    /* 圆点几乎实时，圆环滞后：两套目标值 + 一个 rAF 循环 */
+    const pointer = {
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2,
+      ringX: window.innerWidth / 2,
+      ringY: window.innerHeight / 2,
+      targetX: window.innerWidth / 2,
+      targetY: window.innerHeight / 2,
+      visible: false,
+    };
+
+    let raf = 0;
+    let last = 0;
+    const ac = new AbortController();
+    const { signal } = ac;
+
+    const render = (now: number) => {
+      raf = 0;
+      const dt = last ? Math.min(3, (now - last) / 16.67) : 1;
+      last = now;
+      // 圆点跟随目标；圆环用更小的插值形成“拖尾”
+      pointer.x += (pointer.targetX - pointer.x) * Math.min(1, 0.42 * dt);
+      pointer.y += (pointer.targetY - pointer.y) * Math.min(1, 0.42 * dt);
+      pointer.ringX += (pointer.targetX - pointer.ringX) * Math.min(1, 0.16 * dt);
+      pointer.ringY += (pointer.targetY - pointer.ringY) * Math.min(1, 0.16 * dt);
+
+      dot.style.setProperty('--cx', `${pointer.x.toFixed(2)}px`);
+      dot.style.setProperty('--cy', `${pointer.y.toFixed(2)}px`);
+      ring.style.setProperty('--cx', `${pointer.ringX.toFixed(2)}px`);
+      ring.style.setProperty('--cy', `${pointer.ringY.toFixed(2)}px`);
+
+      const settled =
+        Math.abs(pointer.targetX - pointer.ringX) < 0.1 &&
+        Math.abs(pointer.targetY - pointer.ringY) < 0.1 &&
+        Math.abs(pointer.targetX - pointer.x) < 0.1 &&
+        Math.abs(pointer.targetY - pointer.y) < 0.1;
+
+      // 静止后停止 rAF，等下一次 pointermove 再唤醒（省电）
+      if (!settled) {
+        raf = requestAnimationFrame(render);
+      } else {
+        last = 0;
+      }
+    };
+
+    const start = () => {
+      if (!raf) {
+        last = 0;
+        raf = requestAnimationFrame(render);
+      }
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (event.pointerType !== 'mouse') {
+        root.classList.remove('is-visible');
+        pointer.visible = false;
+        return;
+      }
+      pointer.targetX = event.clientX;
+      pointer.targetY = event.clientY;
+      if (!pointer.visible) {
+        pointer.visible = true;
+        pointer.x = pointer.targetX;
+        pointer.y = pointer.targetY;
+        pointer.ringX = pointer.targetX;
+        pointer.ringY = pointer.targetY;
+        root.classList.add('is-visible');
+      }
+      // 贴边时把圆环归位，避免视口外坐标导致 transform 抖动
+      start();
+    };
+
+    const onPointerLeave = () => {
+      pointer.visible = false;
+      root.classList.remove('is-visible', 'is-hover', 'is-labelled');
+    };
+
+    const onPointerDown = () => root.classList.add('is-down');
+    const onPointerUp = () => root.classList.remove('is-down');
+
+    const setHover = (target: EventTarget | null) => {
+      const el = target instanceof Element ? target : null;
+      if (!el) return;
+      if (el.closest(NATIVE_SELECTOR)) {
+        root.classList.remove('is-hover', 'is-labelled');
+        return;
+      }
+      const hit = el.closest<HTMLElement>(HOVER_SELECTOR);
+      if (!hit) {
+        root.classList.remove('is-hover', 'is-labelled');
+        return;
+      }
+      root.classList.add('is-hover');
+      const text = hit.getAttribute('data-cursor') || '';
+      if (label) {
+        if (text) {
+          label.textContent = text;
+          root.classList.add('is-labelled');
+        } else {
+          root.classList.remove('is-labelled');
+        }
+      }
+    };
+
+    const onPointerOver = (event: PointerEvent) => setHover(event.target);
+
+    const onPointerOut = (event: PointerEvent) => {
+      const related = event.relatedTarget;
+      if (!(related instanceof Element) || !related.closest(HOVER_SELECTOR)) {
+        root.classList.remove('is-hover', 'is-labelled');
+      }
+    };
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true, signal });
+    window.addEventListener('pointerdown', onPointerDown, { passive: true, signal });
+    window.addEventListener('pointerup', onPointerUp, { passive: true, signal });
+    document.addEventListener('pointerover', onPointerOver, { passive: true, signal });
+    document.addEventListener('pointerout', onPointerOut, { passive: true, signal });
+    document.documentElement.addEventListener('mouseleave', onPointerLeave, { signal });
+    window.addEventListener('blur', onPointerLeave, { signal });
+
+    // 触屏 / 减少动态偏好变化时安全退出
+    const onPreferenceChange = () => {
+      if (!fineQuery.matches || reduceQuery.matches) bootCursor();
+    };
+    fineQuery.addEventListener('change', onPreferenceChange, { signal });
+    reduceQuery.addEventListener('change', onPreferenceChange, { signal });
+
+    document.documentElement.classList.add('has-custom-cursor');
+    start();
+
+    instance = {
+      destroy() {
+        ac.abort();
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+        document.documentElement.classList.remove('has-custom-cursor');
+        root.classList.remove('is-visible', 'is-hover', 'is-labelled', 'is-down');
+        ring.style.removeProperty('--cx');
+        ring.style.removeProperty('--cy');
+        dot.style.removeProperty('--cx');
+        dot.style.removeProperty('--cy');
+        instance = null;
+      },
+    };
+  }
+
+  // 模块可能只会执行一次（ClientRouter 导航时），用 page-load 重新绑定
+  const w = window as Window & { __cursorBound?: boolean };
+  if (!w.__cursorBound) {
+    w.__cursorBound = true;
+    document.addEventListener('astro:before-swap', () => {
+      instance?.destroy();
+    });
+    document.addEventListener('astro:page-load', bootCursor);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootCursor, { once: true });
+    } else {
+      bootCursor();
+    }
+  }
+</script>

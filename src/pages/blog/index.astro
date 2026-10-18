@@ -1,28 +1,280 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PostCard from '../../components/PostCard.astro';
+import StarChart from '../../components/StarChart.astro';
+import Icon from '../../components/Icon.astro';
+import { SITE } from '../../site.config';
+import { formatDate, isoDate, readingTime } from '../../utils';
 
 const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
+
+const entries = posts.map((post, i) => ({
+  post,
+  /** 最新的一篇编号最大，和首页的 NO. 保持一致 */
+  no: String(posts.length - i).padStart(2, '0'),
+  minutes: readingTime(post.body ?? '').minutes,
+}));
+
+// 标签 -> 出现次数，按次数倒序；「全部」永远排在最前
+const tagCounts = new Map<string, number>();
+for (const post of posts) {
+  for (const tag of post.data.tags) tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+}
+const tags = [...tagCounts.entries()].sort(
+  (a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-Hans-CN')
+);
+
+// 按年份分组：entries 已经按时间倒序，年份自然也是倒序
+const years: { year: number; entries: typeof entries }[] = [];
+for (const entry of entries) {
+  const year = entry.post.data.pubDate.getUTCFullYear();
+  const last = years[years.length - 1];
+  if (last && last.year === year) last.entries.push(entry);
+  else years.push({ year, entries: [entry] });
+}
+
+const latest = posts[0];
+const totalMinutes = entries.reduce((sum, entry) => sum + entry.minutes, 0);
+const monthDay = (date: Date) => formatDate(date).slice(5).replace('-', '.');
 ---
 
-<BaseLayout title="文章" description="全部文章归档。">
-  <div class="section-head">
-    <h2>全部文章（{posts.length}）</h2>
-    <a href="/rss.xml">RSS 订阅 →</a>
+<BaseLayout title="全部文章" description="全部文章归档 —— 按时间排列的技术笔记与随想。">
+  <script is:inline>
+    // 渐进增强：只有 JS 可用时才把标签筛选露出来；无 JS 时整份档案照常可读。
+    document.documentElement.classList.add('filter-ready');
+  </script>
+
+  <div class="archive" data-archive>
+    <!-- 档案库题头 -->
+    <header class="archive-hero">
+      <div class="archive-hero__glow" aria-hidden="true"></div>
+      <div class="archive-hero__grid" aria-hidden="true"></div>
+      <div class="archive-hero__sigil" aria-hidden="true">
+        <svg viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="110" cy="110" r="86" stroke="currentColor" stroke-opacity=".26" stroke-width=".8"></circle>
+          <circle cx="110" cy="110" r="62" stroke="currentColor" stroke-opacity=".16" stroke-width=".7" stroke-dasharray="1.4 5"></circle>
+          <circle cx="110" cy="110" r="38" stroke="currentColor" stroke-opacity=".12" stroke-width=".7"></circle>
+          <path
+            d="M110 42 114.5 105.5 178 110 114.5 114.5 110 178 105.5 114.5 42 110 105.5 105.5Z"
+            fill="currentColor"
+            fill-opacity=".65"></path>
+          <path
+            d="M110 12v14M110 194v14M12 110h14M194 110h14"
+            stroke="currentColor"
+            stroke-width=".8"
+            stroke-opacity=".4"
+            stroke-linecap="round"></path>
+          <circle cx="110" cy="110" r="4" fill="currentColor"></circle>
+        </svg>
+      </div>
+      <div class="wrap archive-hero__inner">
+        <div class="archive-hero__top" data-reveal="fade">
+          <p class="eyebrow">ALL NOTES / 档案库</p>
+          <p class="archive-hero__vol mono">
+            VOL. I <span aria-hidden="true">·</span> EST. {SITE.since}
+            <span aria-hidden="true">·</span>
+            {SITE.location}
+          </p>
+        </div>
+
+        <h1 class="archive-hero__title" data-reveal>
+          全部<em>文章</em>
+          <span class="archive-hero__latin" aria-hidden="true">The Complete Archive</span>
+        </h1>
+
+        <div class="archive-hero__bottom">
+          <p class="archive-hero__intro" data-reveal style="--reveal-delay:.08s">
+            技术笔记、学习记录，以及一些不必有结论的随想。按时间铺开，
+            像一张慢慢展开的星图 —— 不追求更新频率，只记下真正想留下的微光。
+          </p>
+
+          <dl class="archive-hero__stats" data-reveal style="--reveal-delay:.16s">
+            <div class="archive-stat">
+              <dt>NOTES</dt>
+              <dd>{String(posts.length).padStart(2, '0')}<span>篇</span></dd>
+            </div>
+            <div class="archive-stat">
+              <dt>TAGS</dt>
+              <dd>{String(tags.length).padStart(2, '0')}<span>个</span></dd>
+            </div>
+            <div class="archive-stat">
+              <dt>READING</dt>
+              <dd>{totalMinutes}<span>分钟</span></dd>
+            </div>
+            <div class="archive-stat">
+              <dt>LATEST</dt>
+              <dd class="archive-stat--date">{latest ? formatDate(latest.data.pubDate) : '—'}</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </header>
+
+    <!-- 标签筛选 -->
+    <div class="wrap">
+      <div class="archive-toolbar">
+        <div class="archive-filter" data-tag-filter role="group" aria-label="按标签筛选文章">
+          <button
+            class="archive-filter__chip is-active"
+            type="button"
+            data-filter-tag="all"
+            aria-pressed="true">
+            全部<span class="archive-filter__count">{String(posts.length).padStart(2, '0')}</span>
+          </button>
+          {
+            tags.map(([tag, count]) => (
+              <button
+                class="archive-filter__chip"
+                type="button"
+                data-filter-tag={tag}
+                aria-pressed="false">
+                {tag}
+                <span class="archive-filter__count">{String(count).padStart(2, '0')}</span>
+              </button>
+            ))
+          }
+        </div>
+
+        <p class="archive-toolbar__status mono" data-filter-status aria-live="polite">
+          全部 {posts.length} 篇
+        </p>
+      </div>
+
+      <p class="archive-empty" data-filter-empty hidden>
+        <span class="archive-empty__star" aria-hidden="true">✦</span>
+        这片星域暂时是空的，换个标签看看？
+        <button class="archive-empty__clear link-underline" type="button" data-filter-clear>
+          清除筛选
+        </button>
+      </p>
+
+      <!-- 按年份归档 -->
+      {
+        years.map((group) => (
+          <section class="archive-year" data-archive-year aria-labelledby={`year-${group.year}`}>
+            <header class="archive-year__head" data-reveal="fade">
+              <h2 class="archive-year__num" id={`year-${group.year}`}>
+                {group.year}
+              </h2>
+              <span class="archive-year__rule" aria-hidden="true" />
+              <span class="archive-year__count mono">
+                {String(group.entries.length).padStart(2, '0')} NOTES
+              </span>
+            </header>
+
+            <ol class="archive-list">
+              {group.entries.map(({ post, no, minutes }) => (
+                <li class="archive-item" data-archive-item data-tags={post.data.tags.join('|')}>
+                  <a class="archive-item__link" href={`/blog/${post.id}/`} data-cursor="阅读">
+                    <span class="archive-item__date">
+                      <time class="archive-item__day" datetime={isoDate(post.data.pubDate)}>
+                        {monthDay(post.data.pubDate)}
+                      </time>
+                      <span class="archive-item__no mono">Nº {no}</span>
+                    </span>
+
+                    <span class="archive-item__body">
+                      <span class="archive-item__title">{post.data.title}</span>
+                      <span class="archive-item__desc">{post.data.description}</span>
+                      <span class="archive-item__meta">
+                        <span class="tag-list">
+                          {post.data.tags.map((tag) => (
+                            <span class="tag-pill">{tag}</span>
+                          ))}
+                        </span>
+                        <span class="archive-item__read mono">{minutes} MIN READ</span>
+                      </span>
+                    </span>
+
+                    <span class="archive-item__arrow" aria-hidden="true">↗</span>
+
+                    <span class="archive-item__chart" aria-hidden="true">
+                      <StarChart seed={post.data.title} />
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ))
+      }
+
+      <!-- 档案末端 -->
+      <footer class="archive-foot" data-reveal>
+        <span class="archive-foot__mark" aria-hidden="true">✦</span>
+        <p class="archive-foot__title">档案暂告一段落<span aria-hidden="true">。</span></p>
+        <p class="archive-foot__sub">
+          新的笔记会先落在这张星图上。想第一时间收到信号，可以订阅 RSS。
+        </p>
+        <div class="archive-foot__actions">
+          <a class="btn" href="/rss.xml" data-magnetic>
+            <Icon name="rss" size={15} />
+            订阅 RSS
+          </a>
+          <a class="btn btn--ghost" href="/" data-magnetic>
+            回到首页
+            <span class="btn-arrow" aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </footer>
+    </div>
   </div>
 
-  {
-    posts.length > 0 ? (
-      <ul class="post-list">
-        {posts.map((post) => (
-          <PostCard post={post} />
-        ))}
-      </ul>
-    ) : (
-      <p class="empty">还没有文章。</p>
-    )
+<script>
+  // 标签筛选：全部在客户端完成，不刷新页面；无 JS 时按钮不渲染出来。
+  const filterBar = document.querySelector<HTMLElement>('[data-tag-filter]');
+  const archiveItems = Array.from(document.querySelectorAll<HTMLElement>('[data-archive-item]'));
+  const yearGroups = Array.from(document.querySelectorAll<HTMLElement>('[data-archive-year]'));
+  const statusEl = document.querySelector<HTMLElement>('[data-filter-status]');
+  const emptyEl = document.querySelector<HTMLElement>('[data-filter-empty]');
+  const clearBtn = document.querySelector<HTMLButtonElement>('[data-filter-clear]');
+
+  if (filterBar && archiveItems.length > 0) {
+    const chips = Array.from(filterBar.querySelectorAll<HTMLButtonElement>('[data-filter-tag]'));
+    let groupTimer = 0;
+
+    const applyFilter = (tag: string) => {
+      let shown = 0;
+
+      for (const item of archiveItems) {
+        const tags = (item.dataset.tags ?? '').split('|').filter(Boolean);
+        const matches = tag === 'all' || tags.includes(tag);
+        item.classList.toggle('is-filtered-out', !matches);
+        item.toggleAttribute('inert', !matches);
+        if (matches) shown += 1;
+      }
+
+      for (const chip of chips) {
+        const active = (chip.dataset.filterTag ?? 'all') === tag;
+        chip.classList.toggle('is-active', active);
+        chip.setAttribute('aria-pressed', String(active));
+      }
+
+      if (statusEl) {
+        statusEl.textContent = tag === 'all' ? `全部 ${archiveItems.length} 篇` : `${tag} · ${shown} 篇`;
+      }
+      if (emptyEl) emptyEl.hidden = shown !== 0;
+
+      // 等行高收起动画走完，再隐藏整年，避免生硬跳变
+      window.clearTimeout(groupTimer);
+      groupTimer = window.setTimeout(() => {
+        for (const group of yearGroups) {
+          const visible = group.querySelectorAll('[data-archive-item]:not(.is-filtered-out)').length;
+          group.classList.toggle('is-hidden', visible === 0);
+        }
+      }, 380);
+    };
+
+    for (const chip of chips) {
+      chip.addEventListener('click', () => applyFilter(chip.dataset.filterTag ?? 'all'));
+    }
+
+    clearBtn?.addEventListener('click', () => {
+      applyFilter('all');
+      chips[0]?.focus();
+    });
   }
+</script>
 </BaseLayout>

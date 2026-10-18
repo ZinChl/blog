@@ -92,6 +92,29 @@ npm run preview   # 预览构建结果
 改文章字段（例如加封面图）要动两个地方：`src/content.config.ts` 定义校验规则，
 `public/admin/config.yml` 决定编辑器里显示什么控件。
 
+## 前端设计（2026.10 重做）
+
+整站视觉重做为「**21nc · 星海档案 / THE ASTRAL ARCHIVE**」：深空墨蓝 + 暖金 + 鸢尾紫，
+衬线大标题 + 等宽小标签 + 星盘线稿 + 细颗粒质感；深色为默认，右上角可切到羊皮纸浅色主题。
+
+- **设计令牌**：`src/styles/tokens.css`（颜色、字体、间距、缓动都在这里；改主题只动这一个文件）
+- **样式分层**：`site.css`（页头页脚/跑马灯/转场）、`hero.css`（首屏与星盘）、
+  `home.css`（首页卡片/自述）、`pages.css`（列表页/文章页/关于/404/留言）；入口是 `global.css`
+- **字体**：西文自托管 Cormorant Garamond（标题）与 JetBrains Mono（元信息），
+  文件在 `public/fonts/`；中文使用系统衬线/无衬线回退，不额外下载中文字体
+- **动效**：`src/scripts/motion.ts`（滚动显现、Lenis 平滑滚动、实时时钟、磁吸按钮、滚动进度），
+  `components/Starfield.astro`（手写 WebGL 星场，`prefers-reduced-motion` / 低性能自动降级）、
+  `components/Cursor.astro`（桌面端自定义光标）
+- **装饰图形**：`components/Astrolabe.astro`（星盘）、`components/StarChart.astro`
+  （按文章标题生成的确定性星图），全部为 SVG / CSS，无位图依赖
+- **首屏底图**：Hubble Ultra Deep Field，NASA / STScI（公有领域，页脚已标注）
+- **主题预览**：任意页面加 `?theme=light` 或 `?theme=dark`，方便分享某一种配色
+- **可访问性**：键盘焦点可见、`prefers-reduced-motion` 全量降级、无 JS 时内容完整可见；
+  首页 Lighthouse：Accessibility / Best Practices / SEO = 100
+
+> 新增文章不需要改任何样式：列表页、文章页会自动套用新的排版。
+> 想换配色/字体，从 `tokens.css` 改起。
+
 ## 目录结构
 
 ```
@@ -102,30 +125,47 @@ npm run preview   # 预览构建结果
 │   ├── host.json
 │   └── package.json
 ├── public/
-│   ├── favicon.svg
+│   ├── fonts/                  # 自托管西文字体（Cormorant / JetBrains Mono）
+│   ├── images/                 # 文章配图 + hero 星云底图
+│   ├── favicon.svg             # 金色星盘图标
+│   ├── og.jpg                  # 社交分享卡片（1200×630）
 │   ├── robots.txt              # 不收录 /admin/
 │   ├── staticwebapp.config.json # 指定 node:20 运行时
-│   ├── images/                 # 编辑器上传的图片
 │   └── admin/
 │       ├── index.html          # 编辑器入口
 │       └── config.yml          # ★ 编辑器能改哪些字段
 └── src/
-    ├── site.config.ts          # ★ 站点信息都在这
+    ├── site.config.ts          # ★ 站点信息都在这（名字/简介/导航/社交）
     ├── content.config.ts       # ★ 文章字段校验
     ├── content/blog/           # ★ 文章放这
-    ├── styles/global.css       # 全部样式（含深浅色主题）
+    ├── styles/
+    │   ├── global.css          # 样式入口（按顺序 import 下面几层）
+    │   ├── tokens.css          # 设计令牌 + 字体 + 基础排版
+    │   ├── site.css            # 页头 / 页脚 / 跑马灯 / 页面转场
+    │   ├── hero.css            # 首屏 / 星盘 / 星野
+    │   ├── home.css            # 首页卡片 / 自述 / 数据统计
+    │   └── pages.css           # 列表页 / 文章页 / 关于 / 404 / 留言
+    ├── scripts/motion.ts       # 动效系统（滚动显现 / Lenis / 时钟 / 磁吸）
     ├── components/
-    │   ├── PostCard.astro
+    │   ├── Hero.astro          # 首屏
+    │   ├── Astrolabe.astro     # 星盘插图
+    │   ├── Starfield.astro     # WebGL 星场
+    │   ├── StarChart.astro     # 文章星图缩略
+    │   ├── Cursor.astro        # 自定义光标
+    │   ├── Icon.astro          # 图标
+    │   ├── PostCard.astro      # 首页文章卡
+    │   ├── Toc.astro           # 文章目录
     │   └── Comments.astro      # ★ 留言区
     ├── layouts/BaseLayout.astro
+    ├── utils.ts                # 日期 / 阅读时长
     └── pages/
         ├── index.astro         # 首页
         ├── about.astro         # 关于
         ├── 404.astro
         ├── rss.xml.js          # RSS 订阅
         └── blog/
-            ├── index.astro     # 文章列表
-            └── [...slug].astro # 文章详情
+            ├── index.astro     # 文章列表（含 tag 筛选、按年分组）
+            └── [...slug].astro # 文章详情（目录 / 阅读进度 / 代码复制）
 ```
 
 ## 部署

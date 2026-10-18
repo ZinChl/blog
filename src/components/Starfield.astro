@@ -1,0 +1,594 @@
+---
+/**
+ * Starfield.astro —「星海档案」WebGL 星场背景
+ * ---------------------------------------------------------------------------
+ * 纯手写 WebGL（无 three.js）：深空渐变 + 极低亮度 fbm 星云 + 银河带 +
+ * 三层细星（轻微闪烁）+ 极淡暗角 + 2 颗稀有流星 + 抖动去色带。
+ *
+ * 使用方式：放在一个 position:relative; overflow:hidden 的 section 里，
+ * 组件自身绝对定位铺满（z-index:0），hero 文字放在其上层即可：
+ *
+ *   <section class="hero">        <!-- position: relative; overflow: hidden -->
+ *     <Starfield />
+ *     <div class="hero-inner">…</div>
+ *   </section>
+ *
+ * 性能与降级：
+ *  - DPR 上限 1.5；
+ *  - 页面隐藏 / canvas 离开视口时暂停 rAF；
+ *  - prefers-reduced-motion 时只渲染一帧静态画面；
+ *  - WebGL 不可用 / 着色器编译失败 / 上下文丢失时隐藏 canvas，
+ *    由组件自带的 CSS 渐变兜底；
+ *  - 浅色主题下自动切换成「羊皮纸上的墨点星图」（背景透明，由 CSS 渐变显示纸色）。
+ */
+interface Props {
+  /** 星点密度系数，1 = 默认；0.5 更空，1.6 更密 */
+  density?: number;
+  /** 是否启用鼠标视差 */
+  parallax?: boolean;
+  /** 额外的 class，方便外部定位 */
+  class?: string;
+}
+
+const { density = 1, parallax = true, class: className = '' } = Astro.props;
+---
+
+<div
+  class:list={['starfield-wrap', className]}
+  data-starfield
+  data-density={density}
+  data-parallax={parallax ? '1' : '0'}
+  aria-hidden="true"
+>
+  <canvas class="starfield" aria-hidden="true"></canvas>
+  <div class="starfield-grain"></div>
+</div>
+
+<style>
+  .starfield-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    contain: strict;
+    /* WebGL 不可用时的兜底：深空渐变 + 两团极淡的星云光晕 */
+    background:
+      radial-gradient(115% 85% at 72% 4%, rgba(169, 160, 232, 0.12), transparent 58%),
+      radial-gradient(95% 75% at 12% 96%, rgba(214, 179, 106, 0.08), transparent 62%),
+      radial-gradient(140% 110% at 50% 42%, #0d1224 0%, #070a14 62%, #05070f 100%);
+  }
+
+  /* 浅色主题：羊皮纸底 —— 画布以透明背景绘制墨点星图 */
+  :global(:root[data-theme='light']) .starfield-wrap {
+    background:
+      radial-gradient(115% 85% at 72% 4%, rgba(81, 75, 143, 0.1), transparent 58%),
+      radial-gradient(95% 75% at 12% 96%, rgba(127, 95, 33, 0.09), transparent 62%),
+      linear-gradient(180deg, #f3eee4 0%, #ede8dd 52%, #e6e0d2 100%);
+  }
+
+  .starfield {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+  }
+  /* WebGL 就绪后再淡入，避免首帧闪白/闪黑 */
+  .starfield-wrap.is-live .starfield {
+    opacity: 1;
+  }
+  /* 降级：隐藏画布，露出 CSS 渐变 */
+  .starfield-wrap.is-fallback .starfield {
+    display: none;
+  }
+
+  /* 静态胶片颗粒（无动画），压住大面积深色的数码感 */
+  .starfield-grain {
+    position: absolute;
+    inset: -12%;
+    pointer-events: none;
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+  :global(:root[data-theme='light']) .starfield-grain {
+    opacity: 0.08;
+    mix-blend-mode: multiply;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .starfield {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  /* =========================================================================
+     星场渲染器
+     ========================================================================= */
+
+  const VERT_SRC = /* glsl */ `
+    attribute vec2 a_pos;
+    void main() {
+      gl_Position = vec4(a_pos, 0.0, 1.0);
+    }
+  `;
+
+  const FRAG_SRC = /* glsl */ `
+    precision highp float;
+
+    uniform vec2  u_res;      // 画布像素尺寸
+    uniform float u_time;     // 累计时间（秒）
+    uniform vec2  u_mouse;    // 平滑后的鼠标位置（-1..1）
+    uniform float u_light;    // 0 = 深色，1 = 浅色（羊皮纸）
+    uniform float u_density;  // 星点密度系数
+
+    float hash21(vec2 p) {
+      p = fract(p * vec2(123.34, 456.21));
+      p += dot(p, p + 45.32);
+      return fract(p.x * p.y);
+    }
+
+    vec2 hash22(vec2 p) {
+      vec3 p3 = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973));
+      p3 += dot(p3, p3.yzx + 33.33);
+      return fract((p3.xx + p3.yz) * p3.zy);
+    }
+
+    float vnoise(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+      f = f * f * (3.0 - 2.0 * f);
+      float a = hash21(i);
+      float b = hash21(i + vec2(1.0, 0.0));
+      float c = hash21(i + vec2(0.0, 1.0));
+      float d = hash21(i + vec2(1.0, 1.0));
+      return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+    }
+
+    float fbm(vec2 p) {
+      float v = 0.0;
+      float amp = 0.5;
+      mat2 rot = mat2(0.80, -0.60, 0.60, 0.80);
+      for (int i = 0; i < 5; i++) {
+        v += amp * vnoise(p);
+        p = rot * p * 2.02 + 17.13;
+        amp *= 0.5;
+      }
+      return v;
+    }
+
+    // 一层星点：按网格撒点，只有极少数格子里有星
+    // 返回带色温的 vec3（大部分暖白，少量偏蓝、极少数偏金）
+    vec3 starLayer(vec2 uv, float scale, float density, float twinkle, vec2 seed) {
+      vec2 p = uv * scale;
+      vec2 id = floor(p);
+      vec2 gv = fract(p) - 0.5;
+      float rnd = hash21(id + seed);
+      if (rnd > density) return vec3(0.0);
+
+      vec2 off = (hash22(id + seed) - 0.5) * 0.84;
+      float d = length(gv - off);
+      // 极少数亮星：更大的核 + 更明显的晕，作为视觉锚点（约 1.5%）
+      float rare = step(0.985, hash21(id + seed + 15.3));
+      float size = mix(0.06, 0.19, pow(hash21(id + seed + 4.7), 1.5)) * (1.0 + rare * 0.9);
+      float core = smoothstep(size, 0.0, d);
+      core *= core;
+      float halo = exp(-d * d * mix(170.0, 720.0, hash21(id + seed + 2.3))) * (1.0 + rare * 1.4);
+      float bright = mix(0.34, 1.0, pow(hash21(id + seed + 8.1), 1.9)) * (1.0 + rare * 2.2);
+      float tw = 0.74 + 0.26 * sin(u_time * twinkle + rnd * 62.83);
+
+      vec3 tint = mix(vec3(0.97, 0.93, 0.85), vec3(0.72, 0.79, 1.0), smoothstep(0.35, 0.9, hash21(id + seed + 6.2)));
+      tint = mix(tint, vec3(1.0, 0.86, 0.62), step(0.94, hash21(id + seed + 12.4)));
+
+      return tint * (core * 1.55 + halo * 0.26) * bright * tw;
+    }
+
+    // 稀有流星：头部光点 + 短尾迹
+    vec3 shootingStar(vec2 uv, float seed, float period) {
+      float cycle = mod(u_time + seed * period, period);
+      float travel = 3.2;
+      if (cycle > travel) return vec3(0.0);
+      float k = cycle / travel;
+      float fade = smoothstep(0.0, 0.16, k) * (1.0 - smoothstep(0.62, 1.0, k));
+      vec2 start = vec2(-0.62 + fract(seed * 7.7) * 0.85, 0.30 - fract(seed * 3.3) * 0.44);
+      vec2 dir = normalize(vec2(1.0, -0.58));
+      vec2 head = start + dir * (k * 1.5);
+      vec2 d = uv - head;
+      float behind = dot(d, -dir);
+      float perp = abs(dot(d, vec2(-dir.y, dir.x)));
+      float trail = smoothstep(0.014, 0.0, perp) * smoothstep(0.32, 0.0, behind) * step(0.0, behind);
+      float glow = exp(-dot(d, d) * 2800.0);
+      return vec3(0.96, 0.93, 0.85) * (trail * 0.15 + glow * 0.6) * fade;
+    }
+
+    void main() {
+      vec2 frag = gl_FragCoord.xy;
+      vec2 uv = (frag - 0.5 * u_res) / u_res.y;
+      float t = u_time;
+      vec2 mouse = u_mouse;
+
+      /* ---------- 星云：域扭曲 fbm，亮度极低 ----------
+         左侧（hero 文案区）刻意压暗，右侧星盘区允许更亮一些。 */
+      vec2 p = uv * 2.2 + vec2(t * 0.0045, -t * 0.0022) + mouse * 0.030;
+      vec2 q = vec2(fbm(p), fbm(p + vec2(5.2, 1.3)));
+      float n = fbm(p + q * 1.6 + vec2(2.6, -1.1));
+      // 只在很窄的“高值区”露出星云，避免整片雾状
+      n = smoothstep(0.48, 0.92, n);
+      // 高频“纤维”打碎团块
+      float filament = fbm(p * 2.6 + q * 2.0 + vec2(9.0, 2.0));
+      float dens = pow(n, 1.6) * (0.3 + 0.7 * smoothstep(0.36, 0.76, filament));
+      float warp = fbm(p * 0.62 + vec2(11.0, 4.0));
+      vec3 nebCol = mix(
+        vec3(0.30, 0.20, 0.95),
+        vec3(0.95, 0.64, 0.22),
+        smoothstep(0.38, 0.66, warp)
+      );
+      // 右侧更亮、左侧更克制（约为右侧的 22%）
+      float sideMask = mix(0.22, 1.0, smoothstep(-0.42, 0.34, uv.x + uv.y * 0.22));
+      float neb = dens * 0.17 * sideMask;
+      vec3 nebRgb = nebCol * neb;
+      // 更细碎的远层星云，只做极弱的层次
+      float n2 = fbm(p * 2.6 - q * 1.2 + vec2(31.0, 7.0));
+      nebRgb += vec3(0.42, 0.36, 0.85) * pow(smoothstep(0.58, 0.94, n2), 2.4) * 0.065 * sideMask;
+
+      /* ---------- 银河带：斜向的、被多层噪声打碎的淡光带 ---------- */
+      vec2 bp = vec2(uv.x * 0.82 + uv.y * 0.57, -uv.x * 0.57 + uv.y * 0.82);
+      float bend = (fbm(vec2(bp.x * 0.85 + 4.0, 3.7)) - 0.5) * 0.16;
+      float bandD = abs(bp.y - 0.10 - bend);
+      float band = exp(-pow(bandD / 0.15, 2.0));
+      float bandTexA = fbm(vec2(bp.x * 2.4, bp.y * 17.0) + vec2(t * 0.008, 0.0));
+      float bandTexB = fbm(vec2(bp.x * 7.5 + 31.0, bp.y * 42.0));
+      float bandMask = smoothstep(0.36, 0.72, bandTexA) * (0.5 + 0.5 * smoothstep(0.32, 0.8, bandTexB));
+      vec3 bandCol = vec3(0.30, 0.33, 0.50) * band * bandMask * 0.05;
+      bandCol += vec3(0.50, 0.43, 0.27) * band * bandMask * bandMask * 0.022;
+
+      /* ---------- 星点：三层 + 银河带内的一层细星尘 ---------- */
+      vec2 par = mouse * 0.012;
+      vec3 layerFine = starLayer(uv + par * 1.0, 170.0, 0.0095 * u_density, 0.55, vec2(0.0));
+      vec3 layerMid = starLayer(uv + par * 1.5, 265.0, 0.0070 * u_density, 0.85, vec2(31.7));
+      vec3 layerDense = starLayer(uv + par * 2.2, 430.0, 0.0055 * u_density, 1.25, vec2(77.3));
+      vec3 dust = starLayer(uv + par * 2.6, 620.0, 0.0120 * u_density, 1.55, vec2(13.1));
+      vec3 starCol =
+        layerFine * 1.15 +
+        layerMid * 1.0 +
+        layerDense * 0.82 +
+        dust * band * 1.1;
+
+      vec3 feat = nebRgb + bandCol + starCol
+                + shootingStar(uv, 0.0, 23.0)
+                + shootingStar(uv, 1.0, 37.0);
+
+      /* ---------- 暗角 ---------- */
+      vec2 vv = frag / u_res - 0.5;
+      float vig = 1.0 - 0.46 * pow(clamp(length(vv * vec2(0.88, 1.02)) * 1.24, 0.0, 1.0), 2.4);
+
+      vec3 col;
+      float alpha;
+      if (u_light > 0.5) {
+        /* 浅色：把特征亮度当作墨点浓度，背景保持透明，露出羊皮纸 CSS 渐变 */
+        float ink = dot(feat, vec3(0.299, 0.587, 0.114));
+        // 限制单点浓度，避免亮星在纸上晕成墨块
+        alpha = clamp(pow(ink, 1.15) * 1.15, 0.0, 0.5);
+        col = vec3(0.10, 0.115, 0.18);
+      } else {
+        /* 深色：深空底色渐变 + 特征叠加 */
+        vec3 bg = mix(
+          vec3(0.027, 0.039, 0.078),
+          vec3(0.047, 0.063, 0.125),
+          smoothstep(-0.55, 0.62, uv.y + 0.12 * sin(uv.x * 1.3))
+        );
+        // 右侧星盘区的两团大尺度微光：暖金 + 鸢尾紫
+        vec2 goldC = uv - vec2(0.40, -0.08);
+        vec2 irisC = uv - vec2(0.24, 0.30);
+        bg += vec3(0.84, 0.68, 0.40) * 0.042 * exp(-dot(goldC, goldC) * 4.2);
+        bg += vec3(0.58, 0.54, 0.92) * 0.055 * exp(-dot(irisC, irisC) * 2.6);
+        bg += vec3(0.20, 0.18, 0.38) * 0.03 * exp(-dot(uv - vec2(0.10, 0.10), uv - vec2(0.10, 0.10)) * 2.6);
+        col = bg * vig + feat * vig;
+        alpha = 1.0;
+      }
+
+      /* ---------- 抖动：消除大面积渐变的色带 ---------- */
+      float dither = (hash21(frag + 0.5) + hash21(frag * 1.63 + 11.1) - 1.0) / 255.0;
+      if (u_light > 0.5) {
+        alpha = clamp(alpha + dither * 0.4, 0.0, 1.0);
+      } else {
+        col += dither;
+      }
+
+      // 画布按预乘 alpha 交给浏览器合成（浅色模式下背景透明）
+      gl_FragColor = vec4(col * alpha, alpha);
+    }
+  `;
+
+  interface StarfieldHandle {
+    destroy: () => void;
+  }
+
+  const handles: StarfieldHandle[] = [];
+  const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  function compile(gl: WebGLRenderingContext, type: number, src: string): WebGLShader | null {
+    const shader = gl.createShader(type);
+    if (!shader) return null;
+    gl.shaderSource(shader, src);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      console.warn('[starfield] shader error:', gl.getShaderInfoLog(shader));
+      gl.deleteShader(shader);
+      return null;
+    }
+    return shader;
+  }
+
+  function createProgram(gl: WebGLRenderingContext): WebGLProgram | null {
+    const vs = compile(gl, gl.VERTEX_SHADER, VERT_SRC);
+    const fs = compile(gl, gl.FRAGMENT_SHADER, FRAG_SRC);
+    if (!vs || !fs) return null;
+    const program = gl.createProgram();
+    if (!program) return null;
+    gl.attachShader(program, vs);
+    gl.attachShader(program, fs);
+    gl.linkProgram(program);
+    gl.deleteShader(vs);
+    gl.deleteShader(fs);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      console.warn('[starfield] link error:', gl.getProgramInfoLog(program));
+      gl.deleteProgram(program);
+      return null;
+    }
+    return program;
+  }
+
+  function initStarfield(wrap: HTMLElement): StarfieldHandle | null {
+    if (wrap.dataset.starfieldReady === '1') return null;
+    const canvas = wrap.querySelector<HTMLCanvasElement>('canvas.starfield');
+    if (!canvas) return null;
+
+    let gl: WebGLRenderingContext | null = null;
+    try {
+      gl = canvas.getContext('webgl', {
+        alpha: true,
+        antialias: false,
+        depth: false,
+        stencil: false,
+        premultipliedAlpha: true,
+        powerPreference: 'high-performance',
+        preserveDrawingBuffer: false,
+      });
+    } catch {
+      gl = null;
+    }
+    if (!gl) {
+      wrap.classList.add('is-fallback');
+      wrap.dataset.starfieldReady = '1';
+      return null;
+    }
+
+    const program = createProgram(gl);
+    if (!program) {
+      wrap.classList.add('is-fallback');
+      wrap.dataset.starfieldReady = '1';
+      return null;
+    }
+
+    const uniforms = {
+      res: gl.getUniformLocation(program, 'u_res'),
+      time: gl.getUniformLocation(program, 'u_time'),
+      mouse: gl.getUniformLocation(program, 'u_mouse'),
+      light: gl.getUniformLocation(program, 'u_light'),
+      density: gl.getUniformLocation(program, 'u_density'),
+    };
+
+    // 全屏三角形
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const aPos = gl.getAttribLocation(program, 'a_pos');
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+    gl.useProgram(program);
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.BLEND);
+    gl.clearColor(0, 0, 0, 0);
+
+    const densityAttr = Number.parseFloat(wrap.dataset.density || '1');
+    const density = Number.isFinite(densityAttr) ? Math.max(0.2, Math.min(2, densityAttr)) : 1;
+    const parallaxEnabled = wrap.dataset.parallax === '1';
+
+    let dpr = 1;
+    const resize = () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      const w = Math.max(1, Math.round(wrap.clientWidth * dpr));
+      const h = Math.max(1, Math.round(wrap.clientHeight * dpr));
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+        gl.viewport(0, 0, w, h);
+      }
+    };
+
+    // ---- 主题（深空 / 羊皮纸）----
+    const themeIsLight = () => document.documentElement.dataset.theme === 'light';
+    let lightTarget = themeIsLight() ? 1 : 0;
+    let light = lightTarget;
+    const themeObserver = new MutationObserver(() => {
+      lightTarget = themeIsLight() ? 1 : 0;
+      if (reduceQuery.matches) drawStatic();
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+    // ---- 鼠标视差 ----
+    const pointer = { tx: 0, ty: 0, x: 0, y: 0 };
+    const onPointerMove = (event: PointerEvent) => {
+      if (event.pointerType !== 'mouse') return;
+      pointer.tx = (event.clientX / window.innerWidth) * 2 - 1;
+      pointer.ty = -((event.clientY / window.innerHeight) * 2 - 1);
+    };
+
+    // ---- 时间与绘制 ----
+    let elapsed = 9.0; // 给静态帧一个“好看的”初始相位
+    let current = elapsed;
+    let last = 0;
+    let raf = 0;
+    let running = false;
+    let inView = true;
+
+    const draw = (time: number, mouseX: number, mouseY: number) => {
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.uniform2f(uniforms.res, canvas.width, canvas.height);
+      gl.uniform1f(uniforms.time, time);
+      gl.uniform2f(uniforms.mouse, mouseX, mouseY);
+      gl.uniform1f(uniforms.light, light);
+      gl.uniform1f(uniforms.density, density);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    };
+
+    const drawStatic = () => {
+      light = lightTarget;
+      draw(9.0, 0, 0);
+      wrap.classList.add('is-live');
+    };
+
+    const loop = (now: number) => {
+      raf = 0;
+      if (!running) return;
+      const dt = Math.min(0.05, Math.max(0, (now - (last || now)) / 1000));
+      last = now;
+      current += dt;
+      elapsed = current;
+      // 平滑跟随，避免鼠标一动星云就跳
+      pointer.x += (pointer.tx - pointer.x) * 0.045;
+      pointer.y += (pointer.ty - pointer.y) * 0.045;
+      // 主题切换时画布内容平滑过渡
+      light += (lightTarget - light) * 0.06;
+      const mx = parallaxEnabled && !reduceQuery.matches ? pointer.x : 0;
+      const my = parallaxEnabled && !reduceQuery.matches ? pointer.y : 0;
+      draw(elapsed, mx, my);
+      raf = requestAnimationFrame(loop);
+    };
+
+    const syncRunning = () => {
+      const shouldRun = inView && !document.hidden && !reduceQuery.matches;
+      if (shouldRun === running) return;
+      running = shouldRun;
+      if (running) {
+        last = 0;
+        if (!raf) raf = requestAnimationFrame(loop);
+        wrap.classList.add('is-live');
+      } else if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        if (reduceQuery.matches) drawStatic();
+      }
+    };
+
+    // ---- 视口 / 可见性 ----
+    const io = 'IntersectionObserver' in window
+      ? new IntersectionObserver((entries) => {
+          for (const entry of entries) inView = entry.isIntersecting;
+          syncRunning();
+        }, { threshold: 0 })
+      : null;
+    io?.observe(wrap);
+
+    const onVisibility = () => syncRunning();
+    const onResize = () => {
+      resize();
+      if (!running) drawStatic();
+    };
+
+    // 尺寸变化时同步画布像素尺寸（首帧也在这里处理）
+    const ro = 'ResizeObserver' in window ? new ResizeObserver(() => {
+      resize();
+      if (!running) drawStatic();
+    }) : null;
+    ro?.observe(wrap);
+
+    const ac = new AbortController();
+    const { signal } = ac;
+    window.addEventListener('resize', onResize, { passive: true, signal });
+    document.addEventListener('visibilitychange', onVisibility, { signal });
+    if (parallaxEnabled) window.addEventListener('pointermove', onPointerMove, { passive: true, signal });
+
+    const onContextLost = (event: Event) => {
+      event.preventDefault();
+      running = false;
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+      wrap.classList.add('is-fallback');
+    };
+    canvas.addEventListener('webglcontextlost', onContextLost, { signal });
+
+    const onReducedChange = () => {
+      light = lightTarget;
+      if (reduceQuery.matches) {
+        syncRunning();
+        drawStatic();
+      } else {
+        syncRunning();
+      }
+    };
+    reduceQuery.addEventListener('change', onReducedChange, { signal });
+
+    // ---- 启动 ----
+    resize();
+    if (reduceQuery.matches) {
+      drawStatic();
+    } else {
+      syncRunning();
+      if (!io) {
+        // 没有 IO 时也至少渲染，别留黑
+        inView = true;
+        syncRunning();
+      }
+      drawStatic();
+    }
+    wrap.classList.add('is-live');
+    wrap.dataset.starfieldReady = '1';
+
+    return {
+      destroy() {
+        running = false;
+        if (raf) cancelAnimationFrame(raf);
+        io?.disconnect();
+        ro?.disconnect();
+        themeObserver.disconnect();
+        ac.abort();
+        gl?.deleteProgram(program);
+        gl?.deleteBuffer(buffer);
+        delete wrap.dataset.starfieldReady;
+      },
+    };
+  }
+
+  function boot() {
+    document.querySelectorAll<HTMLElement>('[data-starfield]').forEach((el) => {
+      const handle = initStarfield(el);
+      if (handle) handles.push(handle);
+    });
+  }
+
+  function teardown() {
+    while (handles.length) handles.pop()?.destroy();
+  }
+
+  // 只执行一次；Astro ClientRouter 切换时通过 page-load 重新初始化
+  const w = window as Window & { __starfieldBound?: boolean };
+  if (!w.__starfieldBound) {
+    w.__starfieldBound = true;
+    document.addEventListener('astro:before-swap', teardown);
+    document.addEventListener('astro:page-load', boot);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot, { once: true });
+    } else {
+      boot();
+    }
+  }
+</script>

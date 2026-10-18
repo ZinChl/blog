@@ -4,27 +4,34 @@ import { formatDate, isoDate } from '../utils';
 
 interface Props {
   post: CollectionEntry<'blog'>;
+  /** 在列表中的序号（从 1 开始），用于编号与错峰显现 */
+  index?: number;
 }
 
-const { post } = Astro.props;
+const { post, index } = Astro.props;
 const { title, description, pubDate, tags } = post.data;
+const delay = index ? `${Math.min(index * 0.06, 0.36)}s` : undefined;
 ---
 
 <li>
-  <a class="post-item" href={`/blog/${post.id}/`}>
+  <a
+    class="note-card"
+    href={`/blog/${post.id}/`}
+    data-reveal
+    data-cursor="阅读"
+    style={delay ? `--reveal-delay:${delay}` : undefined}>
+    <span class="corners" aria-hidden="true"></span>
+    <div class="note-card__top">
+      <time datetime={isoDate(pubDate)}>{formatDate(pubDate)}</time>
+      {index && <span class="note-card__index" aria-hidden="true">{String(index).padStart(2, '0')}</span>}
+    </div>
     <h3>{title}</h3>
     <p>{description}</p>
-    <div class="post-meta">
-      <time datetime={isoDate(pubDate)}>{formatDate(pubDate)}</time>
-      {
-        tags.length > 0 && (
-          <span class="tags">
-            {tags.map((t) => (
-              <span class="tag">{t}</span>
-            ))}
-          </span>
-        )
-      }
+    <div class="note-card__foot">
+      <span class="tag-list">
+        {tags.slice(0, 2).map((tag) => <span class="tag-pill">{tag}</span>)}
+      </span>
+      <span class="arrow" aria-hidden="true">↗</span>
     </div>
   </a>
 </li>

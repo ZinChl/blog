@@ -1,0 +1,57 @@
+---
+/**
+ * 极简图标集：统一用 currentColor 描边，方便跟随主题。
+ */
+interface Props {
+  name:
+    | 'github'
+    | 'email'
+    | 'rss'
+    | 'arrow-up-right'
+    | 'arrow-right'
+    | 'arrow-up'
+    | 'arrow-down'
+    | 'sun'
+    | 'moon'
+    | 'star'
+    | 'link'
+    | 'chevron-right';
+  size?: number;
+  class?: string;
+}
+
+const { name, size = 16, class: className } = Astro.props;
+
+const paths: Record<string, string> = {
+  github:
+    '<path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />',
+  email:
+    '<rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />',
+  rss: '<path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" />',
+  'arrow-up-right': '<path d="M7 17 17 7M8 7h9v9" />',
+  'arrow-right': '<path d="M4 12h15m-6-6 6 6-6 6" />',
+  'arrow-up': '<path d="M12 19V5m-5 5 5-5 5 5" />',
+  'arrow-down': '<path d="M12 5v14m5-5-5 5-5-5" />',
+  sun: '<circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" />',
+  moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />',
+  star: '<path d="m12 3 2.2 6.2L20.5 12l-6.3 2.8L12 21l-2.2-6.2L3.5 12l6.3-2.8L12 3Z" />',
+  link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />',
+  'chevron-right': '<path d="m9 18 6-6-6-6" />',
+};
+---
+
+<svg
+  class={className}
+  xmlns="http://www.w3.org/2000/svg"
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.6"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  set:html={paths[name] ?? ''}
+/>

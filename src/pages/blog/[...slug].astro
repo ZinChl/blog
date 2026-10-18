@@ -2,7 +2,9 @@
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Comments from '../../components/Comments.astro';
-import { formatDate, isoDate } from '../../utils';
+import Toc from '../../components/Toc.astro';
+import Icon from '../../components/Icon.astro';
+import { formatDate, isoDate, readingTime } from '../../utils';
 import { SITE } from '../../site.config';
 
 export async function getStaticPaths() {
@@ -16,62 +18,374 @@ export async function getStaticPaths() {
       post,
       prev: posts[i + 1] ?? null,
       next: posts[i - 1] ?? null,
+      /** 最新一篇编号最大，与首页 / 档案库一致 */
+      no: String(posts.length - i).padStart(2, '0'),
     },
   }));
 }
 
-const { post, prev, next } = Astro.props;
-const { Content } = await render(post);
+const { post, prev, next, no } = Astro.props;
+const { Content, headings } = await render(post);
 const { title, description, pubDate, updatedDate, tags } = post.data;
+
+const reading = readingTime(post.body ?? '');
+const tocItems = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+const year = pubDate.getUTCFullYear();
+const socialItems = [
+  ...SITE.social,
+  { label: 'RSS', href: '/rss.xml', icon: 'rss' },
+];
+const socialIcon = (icon: string) =>
+  icon === 'github' ? 'github' : icon === 'email' ? 'email' : icon === 'rss' ? 'rss' : 'link';
 ---
 
 <BaseLayout title={title} description={description} type="article">
-  <article>
-    <header class="post-header">
-      <h1>{title}</h1>
-      <div class="post-meta">
-        <time datetime={isoDate(pubDate)}>{formatDate(pubDate)}</time>
-        {updatedDate && <span>· 更新于 {formatDate(updatedDate)}</span>}
-        <span>· {SITE.author}</span>
+  <!-- 无 JS 时无法判断首字是否适合做下沉，保守关闭首字下沉，避免「一」变成一道横杠 -->
+  <noscript>
+    <style>
+      .prose > p:first-child::first-letter {
+        float: none;
+        margin: 0;
+        padding: 0;
+        font-family: var(--font-sans);
+        font-size: 1em;
+        font-weight: 400;
+        line-height: inherit;
+        color: inherit;
+      }
+    </style>
+  </noscript>
+
+  <article class="note-article">
+    <!-- 文章题头：居中的编辑部式构图 -->
+    <header class="note-head">
+      <div class="note-head__glow" aria-hidden="true"></div>
+      <div class="note-head__grid" aria-hidden="true"></div>
+
+      <div class="wrap note-head__inner">
+        <div class="note-head__top" data-reveal="fade">
+          <span class="note-head__rule" aria-hidden="true"></span>
+          <p class="eyebrow eyebrow--plain">NOTE Nº {no} <span aria-hidden="true">·</span> {year}</p>
+          <span class="note-head__rule" aria-hidden="true"></span>
+        </div>
+
+        <h1 class="note-head__title" data-reveal>{title}</h1>
+
+        <p class="note-head__desc" data-reveal style="--reveal-delay:.08s">{description}</p>
+
+        <dl class="note-meta" data-reveal style="--reveal-delay:.16s">
+          <div class="note-meta__item">
+            <dt>PUBLISHED</dt>
+            <dd><time datetime={isoDate(pubDate)}>{formatDate(pubDate)}</time></dd>
+          </div>
+          {
+            updatedDate && (
+              <div class="note-meta__item">
+                <dt>UPDATED</dt>
+                <dd>{formatDate(updatedDate)}</dd>
+              </div>
+            )
+          }
+          <div class="note-meta__item">
+            <dt>READING</dt>
+            <dd>{reading.minutes} 分钟 <span class="note-meta__faint">/ {reading.words} 字</span></dd>
+          </div>
+          <div class="note-meta__item">
+            <dt>AUTHOR</dt>
+            <dd>{SITE.author}</dd>
+          </div>
+        </dl>
+
         {
           tags.length > 0 && (
-            <span class="tags">
-              {tags.map((t) => (
-                <span class="tag">{t}</span>
+            <ul class="note-tags" aria-label="文章标签">
+              {tags.map((tag) => (
+                <li>
+                  <span class="tag-pill">{tag}</span>
+                </li>
               ))}
-            </span>
+            </ul>
           )
         }
+
+        <div class="note-head__ornament" aria-hidden="true">
+          <span></span>
+          <i>✦</i>
+          <span></span>
+        </div>
       </div>
     </header>
 
-    <div class="prose">
-      <Content />
+    <!-- 正文 + 右侧目录 -->
+    <div class:list={['wrap', 'note-layout', tocItems.length > 0 && 'note-layout--toc']}>
+      <div class="note-main">
+        <div class="prose" data-prose>
+          <Content />
+        </div>
+
+        <footer class="note-foot">
+          <!-- 标签 -->
+          {
+            tags.length > 0 && (
+              <div class="note-foot__tags">
+                <span class="note-foot__label mono">标签 / TAGS</span>
+                <span class="tag-list">
+                  {tags.map((tag) => (
+                    <span class="tag-pill">{tag}</span>
+                  ))}
+                </span>
+              </div>
+            )
+          }
+
+          <!-- 作者 / 落款 -->
+          <section class="note-author" aria-label="作者">
+            <span class="note-author__sigil" aria-hidden="true">
+              <span class="note-author__ring"></span>
+              <span class="note-author__star">✦</span>
+            </span>
+            <div class="note-author__body">
+              <p class="note-author__eyebrow mono">A NOTE FROM</p>
+              <p class="note-author__name serif">{SITE.author}</p>
+              <p class="note-author__line">
+                {SITE.tagline} <span aria-hidden="true">·</span> {SITE.location}{' '}
+                <span aria-hidden="true">·</span> {formatDate(pubDate)}
+              </p>
+            </div>
+            <ul class="note-author__links" aria-label="联系作者">
+              {
+                socialItems.map((item) => (
+                  <li>
+                    <a
+                      href={item.href}
+                      rel={item.href.startsWith('http') ? 'me noopener' : undefined}
+                      target={item.href.startsWith('http') ? '_blank' : undefined}>
+                      <Icon name={socialIcon(item.icon)} size={13} />
+                      {item.label}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </section>
+
+          <!-- 上一篇 / 下一篇 -->
+          <nav class="note-pager" aria-label="相邻文章">
+            {
+              prev ? (
+                <a class="note-pager__card" href={`/blog/${prev.id}/`}>
+                  <span class="note-pager__label mono">← 上一篇 / PREVIOUS</span>
+                  <span class="note-pager__title serif">{prev.data.title}</span>
+                  <span class="note-pager__date mono">{formatDate(prev.data.pubDate)}</span>
+                </a>
+              ) : (
+                <span class="note-pager__ghost">
+                  <span class="note-pager__label mono">档案起点 / THE FIRST</span>
+                  <span class="note-pager__ghost-text">这已经是档案里最早的一篇</span>
+                </span>
+              )
+            }
+            {
+              next ? (
+                <a class="note-pager__card note-pager__card--next" href={`/blog/${next.id}/`}>
+                  <span class="note-pager__label mono">下一篇 / NEXT →</span>
+                  <span class="note-pager__title serif">{next.data.title}</span>
+                  <span class="note-pager__date mono">{formatDate(next.data.pubDate)}</span>
+                </a>
+              ) : (
+                <span class="note-pager__ghost note-pager__ghost--last">
+                  <span class="note-pager__label mono">最新一篇 / THE LATEST</span>
+                  <span class="note-pager__ghost-text">已经追到星图的最前沿</span>
+                </span>
+              )
+            }
+          </nav>
+
+          <div class="note-foot__back">
+            <a class="link-underline" href="/blog/">返回档案库 <span aria-hidden="true">→</span></a>
+          </div>
+
+          <Comments slug={post.id} />
+        </footer>
+      </div>
+
+      <Toc headings={headings} />
     </div>
-
-    <nav class="post-nav" aria-label="相邻文章">
-      {
-        prev ? (
-          <a href={`/blog/${prev.id}/`}>
-            <span class="label">← 上一篇</span>
-            {prev.data.title}
-          </a>
-        ) : (
-          <span />
-        )
-      }
-      {
-        next ? (
-          <a class="next" href={`/blog/${next.id}/`}>
-            <span class="label">下一篇 →</span>
-            {next.data.title}
-          </a>
-        ) : (
-          <span />
-        )
-      }
-    </nav>
-
-    <Comments slug={post.id} />
   </article>
+
+  <script>
+    // ---------------------------------------------------------------------
+    // 目录：桌面常开、窄屏折叠；滚动高亮当前章节；右侧显示阅读进度
+    // ---------------------------------------------------------------------
+    const tocDetails = document.querySelector<HTMLDetailsElement>('[data-toc-details]');
+    const desktopToc = window.matchMedia('(min-width: 1025px)');
+
+    if (tocDetails) {
+      const syncToc = () => {
+        tocDetails.open = desktopToc.matches;
+      };
+      syncToc();
+      desktopToc.addEventListener('change', syncToc);
+      tocDetails.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+          if (!desktopToc.matches) tocDetails.open = false;
+        });
+      });
+    }
+
+    const tocLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]'));
+    const tocBars = Array.from(document.querySelectorAll<HTMLElement>('[data-toc-bar]'));
+    const tocPercents = Array.from(document.querySelectorAll<HTMLElement>('[data-toc-percent]'));
+    const proseEl = document.querySelector<HTMLElement>('[data-prose]');
+
+    const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+    const headerH = () => {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--header-h');
+      return Number.parseFloat(raw) || 76;
+    };
+
+    // 读进度：从正文顶部开始，到正文底部为止
+    let progressFrame = 0;
+    const paintProgress = () => {
+      progressFrame = 0;
+      if (!proseEl || tocBars.length === 0) return;
+      const rect = proseEl.getBoundingClientRect();
+      const start = window.scrollY + rect.top - headerH() - 96;
+      const span = Math.max(1, proseEl.offsetHeight - (window.innerHeight - headerH() - 96) * 0.35);
+      const ratio = clamp01((window.scrollY - start) / span);
+      for (const bar of tocBars) bar.style.transform = `scaleX(${ratio.toFixed(4)})`;
+      for (const percent of tocPercents) percent.textContent = `${Math.round(ratio * 100)}%`;
+    };
+    const scheduleProgress = () => {
+      if (!progressFrame) progressFrame = requestAnimationFrame(paintProgress);
+    };
+    window.addEventListener('scroll', scheduleProgress, { passive: true });
+    window.addEventListener('resize', scheduleProgress);
+    paintProgress();
+
+    // 当前章节高亮：IntersectionObserver 感知标题进出，再按位置挑出最靠上的一段
+    const headingTargets = tocLinks
+      .map((link) => {
+        const id = decodeURIComponent(link.hash.replace(/^#/, ''));
+        const heading = document.getElementById(id);
+        return heading ? { link, heading } : null;
+      })
+      .filter((item): item is { link: HTMLAnchorElement; heading: HTMLElement } => item !== null);
+
+    if (headingTargets.length > 0) {
+      let activeHash = '';
+
+      const setActive = (hash: string) => {
+        if (hash === activeHash) return;
+        activeHash = hash;
+        for (const { link } of headingTargets) {
+          link.classList.toggle('is-active', link.hash === hash);
+          if (link.hash === hash) link.setAttribute('aria-current', 'true');
+          else link.removeAttribute('aria-current');
+        }
+      };
+
+      const pickActive = () => {
+        const threshold = headerH() + window.innerHeight * 0.24;
+        let current = headingTargets[0];
+        for (const target of headingTargets) {
+          if (target.heading.getBoundingClientRect().top <= threshold) current = target;
+        }
+        setActive(current.link.hash);
+      };
+
+      const observer = new IntersectionObserver(
+        () => pickActive(),
+        { rootMargin: '-12% 0px -70% 0px', threshold: [0, 0.4, 1] }
+      );
+      for (const { heading } of headingTargets) observer.observe(heading);
+      pickActive();
+    }
+
+    // ---------------------------------------------------------------------
+    // 首字下沉：横线型汉字（一/二/三/十）和引号做下沉只会像一道横杠，跳过
+    // ---------------------------------------------------------------------
+    const firstParagraph = proseEl?.querySelector<HTMLParagraphElement>(':scope > p');
+    const firstChar = firstParagraph?.textContent?.trim().charAt(0) ?? '';
+    if (proseEl && /[一二三十—–\-「」『』【】（）()“”"']/.test(firstChar)) {
+      proseEl.classList.add('prose--no-cap');
+    }
+
+    // ---------------------------------------------------------------------
+    // 标题锚点：hover / 聚焦时出现「#」，方便复制某小节的链接
+    // ---------------------------------------------------------------------
+    for (const heading of document.querySelectorAll<HTMLElement>('.prose h2[id], .prose h3[id]')) {
+      const anchor = document.createElement('a');
+      anchor.className = 'heading-anchor';
+      anchor.href = `#${heading.id}`;
+      anchor.setAttribute('aria-label', `链接到本节：${heading.textContent ?? ''}`);
+      anchor.textContent = '#';
+      heading.append(anchor);
+    }
+
+    // ---------------------------------------------------------------------
+    // 代码块：悬停出现复制按钮，复制后短暂显示「已复制」
+    // ---------------------------------------------------------------------
+    const copyText = async (text: string) => {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+      const helper = document.createElement('textarea');
+      helper.value = text;
+      helper.setAttribute('readonly', '');
+      helper.style.position = 'fixed';
+      helper.style.left = '-9999px';
+      document.body.append(helper);
+      helper.select();
+      document.execCommand('copy');
+      helper.remove();
+    };
+
+    for (const pre of document.querySelectorAll<HTMLPreElement>('.prose pre.astro-code')) {
+      const code = pre.querySelector('code');
+      if (!code) continue;
+
+      // 包一层容器：语言标签和复制按钮固定在容器上，不随代码横向滚动
+      const frame = document.createElement('div');
+      frame.className = 'code-block';
+      frame.dataset.language = pre.dataset.language ?? 'code';
+      pre.replaceWith(frame);
+      frame.append(pre);
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'code-copy';
+      button.textContent = '复制';
+      button.setAttribute('aria-label', '复制代码');
+
+      let resetTimer = 0;
+      button.addEventListener('click', async () => {
+        try {
+          await copyText(code.innerText);
+          button.textContent = '已复制';
+          button.classList.add('is-copied');
+          window.clearTimeout(resetTimer);
+          resetTimer = window.setTimeout(() => {
+            button.textContent = '复制';
+            button.classList.remove('is-copied');
+          }, 1800);
+        } catch {
+          button.textContent = '复制失败';
+        }
+      });
+
+      frame.append(button);
+    }
+
+    // ---------------------------------------------------------------------
+    // 表格：包一层横向滚动容器，窄屏不撑破正文
+    // ---------------------------------------------------------------------
+    for (const table of document.querySelectorAll<HTMLTableElement>('.prose table')) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'table-scroll';
+      table.replaceWith(wrapper);
+      wrapper.append(table);
+    }
+  </script>
 </BaseLayout>

@@ -1,14 +1,55 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../site.config';
 ---
 
-<BaseLayout title="页面不存在">
-  <section class="hero">
-    <h1>404</h1>
-    <p class="tagline">这个页面不存在，可能是链接写错了，或者它已经被删掉了。</p>
-    <ul class="social-links">
-      <li><a href="/">回到首页</a></li>
-      <li><a href="/blog/">看看文章</a></li>
-    </ul>
+<BaseLayout title="页面不存在" description="404 —— 这个页面不存在，可能是链接写错了，或者它已经被移走了。">
+  <section class="error-page" aria-labelledby="error-title">
+    <div class="error-sky" aria-hidden="true">
+      <div class="error-sky__glow"></div>
+      <div class="error-orbit error-orbit--outer"><span class="error-orbit__dot"></span></div>
+      <div class="error-orbit error-orbit--mid"><span class="error-orbit__dot error-orbit__dot--iris"></span></div>
+      <div class="error-orbit error-orbit--inner"><span class="error-orbit__dot error-orbit__dot--small"></span></div>
+      <span class="error-spark error-spark--1">✦</span>
+      <span class="error-spark error-spark--2">✧</span>
+      <span class="error-spark error-spark--3">✦</span>
+      <span class="error-spark error-spark--4">·</span>
+    </div>
+
+    <div class="wrap error-page__inner">
+      <p class="eyebrow error-page__eyebrow">ERROR 404 · SIGNAL LOST</p>
+
+      <h1 class="sr-only" id="error-title">页面不存在</h1>
+      <p class="error-code" aria-hidden="true"><span>4</span><span>0</span><span>4</span></p>
+
+      <p class="error-quote serif">你抵达了一片<em>尚未测绘</em>的星域。</p>
+      <p class="error-sub mono">THIS PAGE HAS DRIFTED BEYOND THE CHARTED STARS</p>
+
+      <div class="error-actions">
+        <a class="btn" href="/" data-magnetic>
+          回到首页
+          <span class="btn-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a class="btn btn--ghost" href="/blog/" data-magnetic>
+          浏览档案
+          <span class="btn-arrow" aria-hidden="true">↗</span>
+        </a>
+      </div>
+
+      <dl class="error-meta">
+        <div class="error-meta__item">
+          <dt>CODE</dt>
+          <dd>404 / NOT FOUND</dd>
+        </div>
+        <div class="error-meta__item">
+          <dt>STATUS</dt>
+          <dd>LOST IN TRANSIT</dd>
+        </div>
+        <div class="error-meta__item">
+          <dt>COORDINATE</dt>
+          <dd>{SITE.coords}</dd>
+        </div>
+      </dl>
+    </div>
   </section>
 </BaseLayout>

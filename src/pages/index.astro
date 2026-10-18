@@ -1,40 +1,203 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
 import PostCard from '../components/PostCard.astro';
+import StarChart from '../components/StarChart.astro';
 import { SITE } from '../site.config';
+import { formatDate, isoDate } from '../utils';
 
 const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
 const recent = posts.slice(0, SITE.homePostCount);
+const [feature, ...rest] = recent;
+const tagCount = new Set(posts.flatMap((post) => post.data.tags)).size;
+
+const marqueeItems = [
+  SITE.titleEn,
+  SITE.nameCn,
+  `EST. ${SITE.since}`,
+  'KNOWLEDGE · CURIOSITY · INFINITY',
+  '写代码 · 看星星 · 记想法',
+  'NOTES FROM THE EDGE OF THE UNIVERSE',
+  'A PERSONAL ATLAS',
+];
 ---
 
 <BaseLayout>
-  <section class="hero">
-    <h1>{SITE.title}</h1>
-    <p class="tagline">{SITE.tagline}</p>
-    <ul class="social-links">
-      {SITE.social.map((s) => <li><a href={s.href} rel="me noopener">{s.label}</a></li>)}
-    </ul>
-  </section>
+  <Hero />
 
-  <section>
-    <div class="section-head">
-      <h2>最近写的东西</h2>
-      <a href="/blog/">全部文章 →</a>
+  <!-- 滚动字幕带 -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee__track">
+      {
+        [0, 1].map((group) => (
+          <div class="marquee__group">
+            {marqueeItems.map((item) => (
+              <span class="marquee__item">
+                <span class="spark">✦</span>
+                {item.includes('·') ? <strong>{item}</strong> : item}
+              </span>
+            ))}
+          </div>
+        ))
+      }
     </div>
+  </div>
 
-    {
-      recent.length > 0 ? (
-        <ul class="post-list">
-          {recent.map((post) => (
-            <PostCard post={post} />
-          ))}
-        </ul>
-      ) : (
-        <p class="empty">还没有文章。去 src/content/blog/ 里新建一个 .md 文件就能开始写了。</p>
-      )
-    }
+  <!-- 01 / 最近写的东西 -->
+  <section class="section" id="recent">
+    <div class="wrap">
+      <div class="section-head" data-reveal>
+        <div class="section-head__title">
+          <span class="index-num" aria-hidden="true">01</span>
+          <div>
+            <p class="section-kicker">RECENT WRITING</p>
+            <h2>最近写的<em>东西</em></h2>
+          </div>
+        </div>
+        <div class="section-head__aside">
+          <a class="link-underline" href="/blog/">全部文章 <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+
+      {
+        feature ? (
+          <>
+            <a class="notes-feature" href={`/blog/${feature.id}/`} data-reveal data-cursor="阅读">
+              <span class="corners" aria-hidden="true"></span>
+              <div class="notes-feature__body">
+                <div class="notes-feature__meta">
+                  <span class="feature-label">LATEST NOTE</span>
+                  <time datetime={isoDate(feature.data.pubDate)}>{formatDate(feature.data.pubDate)}</time>
+                  <span aria-hidden="true">/</span>
+                  <span>NO. {String(posts.length).padStart(2, '0')}</span>
+                </div>
+                <h3>{feature.data.title}</h3>
+                <p class="notes-feature__desc">{feature.data.description}</p>
+                <div class="notes-feature__foot">
+                  <span class="tag-list">
+                    {feature.data.tags.slice(0, 4).map((tag) => <span class="tag-pill">{tag}</span>)}
+                  </span>
+                  <span class="read-more">READ THE NOTE <span aria-hidden="true">↗</span></span>
+                </div>
+              </div>
+              <div class="notes-feature__art" aria-hidden="true">
+                <StarChart seed={feature.data.title} />
+                <span class="art-caption">FIG. {formatDate(feature.data.pubDate)}</span>
+              </div>
+            </a>
+
+            {rest.length > 0 && (
+              <ul class="note-grid">
+                {rest.map((post, i) => (
+                  <PostCard post={post} index={i + 2} />
+                ))}
+              </ul>
+            )}
+          </>
+        ) : (
+          <p class="empty">还没有文章。去 src/content/blog/ 里新建一个 .md 文件就能开始写了。</p>
+        )
+      }
+
+      <div class="notes-more">
+        <a class="btn btn--ghost" href="/blog/" data-magnetic>
+          浏览全部档案
+          <span class="btn-arrow" aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </div>
   </section>
+
+  <!-- 02 / 关于这间观测站 -->
+  <section class="section" id="about">
+    <div class="wrap">
+      <div class="section-head" data-reveal>
+        <div class="section-head__title">
+          <span class="index-num" aria-hidden="true">02</span>
+          <div>
+            <p class="section-kicker">ABOUT THE OBSERVATORY</p>
+            <h2>关于这间<em>观测站</em></h2>
+          </div>
+        </div>
+        <div class="section-head__aside">
+          <a class="link-underline" href="/about/">完整关于页 <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+
+      <div class="manifesto">
+        <div data-reveal>
+          <p class="manifesto__lead">
+            一边写代码，一边<em>收集星光</em>。这里是我的私人星图<span class="star-accent" aria-hidden="true">✦</span>
+          </p>
+          <div class="manifesto__body">
+            <p>
+              你好，我是 {SITE.author}，目前在格拉斯哥读书。这个博客用来放技术笔记、学习记录，
+              以及偶尔冒出来的想法 —— 写清楚，才算真的懂了。
+            </p>
+            <p>
+              如果这些文字恰好对你有用，欢迎 <a href={SITE.social.find((s) => s.icon === 'email')?.href ?? '/about/'}>写信</a>
+              给我，或者去 <a href={SITE.social.find((s) => s.icon === 'github')?.href ?? '#'} rel="noopener">GitHub</a> 看看我在折腾什么。
+            </p>
+          </div>
+        </div>
+
+        <div data-reveal style="--reveal-delay:.12s">
+          <dl class="manifesto__log">
+            <div class="log-row">
+              <dt>STATUS</dt>
+              <dd><span class="live-dot" aria-hidden="true"></span>在读 · 持续更新中</dd>
+            </div>
+            <div class="log-row">
+              <dt>LOCATION</dt>
+              <dd>{SITE.location} <span class="muted">· {SITE.coords}</span></dd>
+            </div>
+            <div class="log-row">
+              <dt>STACK</dt>
+              <dd>Astro · Azure Static Web Apps · Sveltia CMS</dd>
+            </div>
+            <div class="log-row">
+              <dt>WRITING</dt>
+              <dd>{SITE.since} — 至今 <span class="muted">· {posts.length} 篇</span></dd>
+            </div>
+            <div class="log-row">
+              <dt>SIGNAL</dt>
+              <dd><span class="clock" data-clock data-tz={SITE.timeZone}>--:--:--</span> <span class="muted">LCL · 本地时间</span></dd>
+            </div>
+          </dl>
+
+          <div class="stats">
+            <div class="stat">
+              <span class="stat__value">{posts.length}<sup>篇</sup></span>
+              <span class="stat__label">Notes</span>
+            </div>
+            <div class="stat">
+              <span class="stat__value">{tagCount}<sup>个</sup></span>
+              <span class="stat__label">Tags</span>
+            </div>
+            <div class="stat">
+              <span class="stat__value">∞</span>
+              <span class="stat__label">Curiosity</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 档案库入口 -->
+  <div class="wrap">
+    <section class="home-cta" data-reveal>
+      <div class="home-cta__text">
+        <h2>想看看更早的<em>星尘</em>？</h2>
+        <p>全部文章都收在档案库里，按时间排列，可以慢慢翻。</p>
+      </div>
+      <a class="btn" href="/blog/" data-magnetic>
+        进入档案库
+        <span class="btn-arrow" aria-hidden="true">↗</span>
+      </a>
+    </section>
+  </div>
 </BaseLayout>

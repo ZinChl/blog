@@ -1,4 +1,10 @@
 ---
+/**
+ * 留言区 —— Azure Functions API 的展示层。
+ * 视觉已重做（样式在 styles/pages.css 的 comments 段落），但 data-* 钩子与
+ * 请求逻辑保持不变：POST /api/comments、GET ?slug=、DELETE ?slug=&id=，
+ * 蜜罐字段 website + elapsed 反机器人时长判断都照旧。
+ */
 interface Props {
   /** 文章 id，作为留言的分区键 */
   slug: string;
@@ -8,12 +14,16 @@ const { slug } = Astro.props;
 ---
 
 <section class="comments" data-comments data-slug={slug}>
-  <h2 class="comments-heading">
-    留言<span class="comments-count" data-count></span>
-  </h2>
+  <header class="comments__head">
+    <div class="comments__titles">
+      <p class="comments__eyebrow eyebrow eyebrow--plain">TRANSMISSIONS</p>
+      <h2 class="comments__title">留言<span class="comments-count" data-count></span></h2>
+    </div>
+    <p class="comments__hint">留下一条信号，等它穿过星海。</p>
+  </header>
 
-  <div data-list>
-    <p class="comments-status" data-status>正在加载留言…</p>
+  <div class="comments__list" data-list>
+    <p class="comments-status" data-status aria-live="polite">正在加载留言…</p>
   </div>
 
   <form class="comment-form" data-form>
@@ -55,7 +65,10 @@ const { slug } = Astro.props;
     </div>
 
     <div class="comment-actions">
-      <button type="submit" class="comment-submit" data-submit>发表留言</button>
+      <button type="submit" class="comment-submit" data-submit>
+        发表留言
+        <span class="comment-submit__arrow" aria-hidden="true">↗</span>
+      </button>
       <p class="comment-form-status" data-form-status role="status"></p>
     </div>
   </form>
@@ -64,183 +77,6 @@ const { slug } = Astro.props;
     <button type="button" class="comment-admin-toggle" data-admin-toggle>管理</button>
   </p>
 </section>
-
-<style is:global>
-  /* 样式是全局的，因为留言条目由 JS 动态创建，组件级作用域样式套不上 */
-  .comments {
-    margin-top: 3.5rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--border);
-  }
-
-  .comments-heading {
-    font-size: 1.05rem;
-    font-weight: 620;
-    letter-spacing: -0.01em;
-    margin: 0 0 1.25rem;
-  }
-  .comments-count {
-    color: var(--fg-faint);
-    font-weight: 400;
-    margin-left: 0.35rem;
-  }
-
-  .comments-status,
-  .comment-form-status {
-    color: var(--fg-muted);
-    font-size: 0.9rem;
-    margin: 0.75rem 0;
-  }
-  .comments-status[data-kind='error'],
-  .comment-form-status[data-kind='error'] {
-    color: #dc2626;
-  }
-  .comment-form-status[data-kind='ok'] {
-    color: #16a34a;
-  }
-
-  .comment {
-    padding: 1rem 0;
-  }
-  .comment + .comment {
-    border-top: 1px solid var(--border);
-  }
-
-  .comment-head {
-    display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-bottom: 0.35rem;
-  }
-  .comment-name {
-    font-weight: 600;
-    font-size: 0.925rem;
-  }
-  .comment-time {
-    font-size: 0.78rem;
-    color: var(--fg-faint);
-    font-variant-numeric: tabular-nums;
-  }
-  .comment-delete {
-    margin-left: auto;
-    font: inherit;
-    font-size: 0.78rem;
-    color: var(--fg-faint);
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 0.1rem 0.5rem;
-    cursor: pointer;
-  }
-  .comment-delete:hover {
-    color: #dc2626;
-    border-color: #dc2626;
-  }
-
-  .comment-body {
-    font-size: 0.95rem;
-    line-height: 1.7;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-  }
-
-  .comment-form {
-    margin-top: 2.5rem;
-    padding: 1.25rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--bg-soft);
-  }
-  .comment-field {
-    margin-bottom: 0.9rem;
-  }
-  .comment-field label {
-    display: block;
-    font-size: 0.85rem;
-    font-weight: 550;
-    margin-bottom: 0.35rem;
-  }
-  .comment-hint {
-    font-weight: 400;
-    color: var(--fg-faint);
-    margin-left: 0.4rem;
-  }
-  .comment-field input,
-  .comment-field textarea {
-    width: 100%;
-    font: inherit;
-    font-size: 0.925rem;
-    color: var(--fg);
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.55rem 0.7rem;
-    resize: vertical;
-  }
-  .comment-field input:focus,
-  .comment-field textarea:focus {
-    outline: 2px solid var(--accent);
-    outline-offset: 1px;
-    border-color: var(--accent);
-  }
-
-  /* 蜜罐字段：移出可视区域，保留在 DOM 里给机器人上钩 */
-  .comment-honeypot {
-    position: absolute;
-    left: -9999px;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-  }
-
-  .comment-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.9rem;
-    flex-wrap: wrap;
-  }
-  .comment-submit {
-    font: inherit;
-    font-size: 0.9rem;
-    font-weight: 550;
-    color: #fff;
-    background: var(--accent);
-    border: 0;
-    border-radius: 8px;
-    padding: 0.5rem 1.1rem;
-    cursor: pointer;
-  }
-  .comment-submit:hover:not(:disabled) {
-    filter: brightness(1.08);
-  }
-  .comment-submit:disabled {
-    opacity: 0.55;
-    cursor: default;
-  }
-  .comment-actions .comment-form-status {
-    margin: 0;
-  }
-
-  .comment-admin {
-    margin: 1rem 0 0;
-    text-align: right;
-  }
-  .comment-admin-toggle {
-    font: inherit;
-    font-size: 0.75rem;
-    color: var(--fg-faint);
-    background: none;
-    border: 0;
-    padding: 0;
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
-  }
-  .comment-admin-toggle:hover {
-    color: var(--fg-muted);
-  }
-</style>
 
 <script>
   const root = document.querySelector('[data-comments]');
@@ -349,7 +185,8 @@ const { slug } = Astro.props;
         countEl.textContent = comments.length ? `（${comments.length}）` : '';
         renderComments(comments);
       } catch (err) {
-        setStatus(statusEl, `留言加载失败：${err.message}`, 'error');
+        // 本地没有 Functions API / 网络暂时不通时，给一句人话，而不是把异常直接抛给读者
+        setStatus(statusEl, `留言暂时没有接通（${err.message}）。可以稍后刷新再试试。`, 'error');
       }
     }
 

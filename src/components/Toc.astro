@@ -1,0 +1,62 @@
+---
+/**
+ * 文章目录 —— 由 render(post) 返回的 headings 生成。
+ * 桌面端是右侧 sticky 面板，窄屏折叠成 <details> 放在正文上方。
+ * 交互（折展、滚动高亮、进度条）由文章页的脚本驱动，这里只负责结构与语义。
+ */
+interface HeadingItem {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: HeadingItem[];
+}
+
+const { headings } = Astro.props;
+const items = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+---
+
+{
+  items.length > 0 && (
+    <aside class="note-aside" data-toc>
+      <details class="toc" open data-toc-details>
+        <summary class="toc__summary">
+          <span class="toc__summary-label">CONTENTS</span>
+          <span class="toc__summary-cn">目录</span>
+          <span class="toc__summary-count">{String(items.length).padStart(2, '0')}</span>
+        </summary>
+
+        <div class="toc__panel">
+          <p class="toc__eyebrow">
+            <span>CONTENTS</span>
+            <em>目录</em>
+          </p>
+
+          <nav class="toc__nav" aria-label="本文目录">
+            <ol class="toc__list">
+              {items.map((heading) => (
+                <li class:list={['toc__item', `toc__item--h${heading.depth}`]}>
+                  <a class="toc__link" href={`#${heading.slug}`} data-toc-link>
+                    {heading.text}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+
+          <div class="toc__progress">
+            <div class="toc__progress-head">
+              <span class="toc__progress-label">READING</span>
+              <span class="toc__progress-value" data-toc-percent>0%</span>
+            </div>
+            <div class="toc__progress-track" aria-hidden="true">
+              <span class="toc__progress-bar" data-toc-bar></span>
+            </div>
+          </div>
+        </div>
+      </details>
+    </aside>
+  )
+}

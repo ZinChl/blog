@@ -1,10 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="site icon">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="21nc · 星海档案">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#3b82f6"/>
-      <stop offset="100%" stop-color="#8b5cf6"/>
+    <linearGradient id="sigil-gold" x1="10" y1="8" x2="54" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F0D9A6" />
+      <stop offset="0.52" stop-color="#D6B36A" />
+      <stop offset="1" stop-color="#A9823F" />
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="14" fill="url(#g)"/>
-  <path d="M22 44V21h5v18h15v5H22z" fill="#fff"/>
+  <rect width="64" height="64" rx="14" fill="#070A14" />
+  <circle cx="32" cy="32" r="21" stroke="url(#sigil-gold)" stroke-width="1.5" fill="none" opacity="0.6" />
+  <circle cx="32" cy="32" r="15" stroke="#D6B36A" stroke-width="0.8" fill="none" opacity="0.32" stroke-dasharray="1.5 4" />
+  <path d="M32 11.5 34.9 27.6 50 32l-15.1 4.4L32 52.5l-2.9-16.1L14 32l15.1-4.4L32 11.5Z" fill="url(#sigil-gold)" />
+  <circle cx="32" cy="32" r="2.4" fill="#F8EBD0" />
+  <path d="M32 4.5v4M32 55.5v4M4.5 32h4M55.5 32h4" stroke="#D6B36A" stroke-width="1.1" stroke-linecap="round" opacity="0.5" />
 </svg>

@@ -1,42 +1,295 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Astrolabe from '../components/Astrolabe.astro';
+import Icon from '../components/Icon.astro';
 import { SITE } from '../site.config';
+
+const posts = await getCollection('blog', ({ data }) => !data.draft);
+const tagCount = new Set(posts.flatMap((post) => post.data.tags)).size;
+
+const email = SITE.social.find((item) => item.icon === 'email');
+const github = SITE.social.find((item) => item.icon === 'github');
+const socialIcon = (icon: string) =>
+  icon === 'github' ? 'github' : icon === 'email' ? 'email' : icon === 'rss' ? 'rss' : 'link';
+
+const doing = [
+  {
+    no: '01',
+    title: '在格拉斯哥大学读书',
+    desc: '课业之外的时间，大多花在实验室、开发板和屏幕之间。',
+    tag: 'STUDYING',
+  },
+  {
+    no: '02',
+    title: '折腾一些自己感兴趣的项目',
+    desc: '写代码、焊板子、调传感器 —— 把想法做成能跑的东西，过程本身就很值。',
+    tag: 'BUILDING',
+  },
+  {
+    no: '03',
+    title: 'florr.io · 杀戮尖塔2 · MC地下城2 · Minecraft',
+    desc: '碗虫杯、开播、和朋友联机 —— 游戏也是生活的一部分。',
+    tag: 'PLAYING',
+  },
+  {
+    no: '04',
+    title: '吃饭，睡觉，摆烂',
+    desc: '不卷的时候，认真休息也是正经事。',
+    tag: 'LIVING',
+  },
+];
+
+const stack = ['Astro', 'Markdown', 'TypeScript', 'Azure Static Web Apps', 'GitHub Actions', 'Sveltia CMS', 'Shiki', 'Lenis'];
+
+const flow = [
+  { step: '01', title: 'Markdown', desc: '本地写作' },
+  { step: '02', title: 'GitHub', desc: '推送代码' },
+  { step: '03', title: 'Azure SWA', desc: '自动构建' },
+  { step: '04', title: 'CDN', desc: '全球发布' },
+];
 ---
 
-<BaseLayout title="关于" description={`关于 ${SITE.title}`}>
-  <article>
-    <header class="post-header">
-      <h1>关于</h1>
+<BaseLayout title="关于" description={`关于 ${SITE.title} · ${SITE.nameCn}：一个在格拉斯哥读书的人，写代码、看星星、记点东西。`}>
+  <div class="about">
+    <!-- 关于页题头：巨大的陈述 + 星盘「肖像」 -->
+    <header class="page-hero about-hero">
+      <div class="page-hero__glow" aria-hidden="true"></div>
+      <div class="page-hero__grid" aria-hidden="true"></div>
+
+      <div class="wrap about-hero__inner">
+        <div class="about-hero__copy">
+          <p class="eyebrow" data-reveal="fade">ABOUT / 关于</p>
+
+          <h1 class="about-hero__title" data-reveal>
+            在代码与<br />群星<em>之间</em>
+            <span class="about-hero__latin" aria-hidden="true">A quiet observer of the sky</span>
+          </h1>
+
+          <p class="about-hero__lead" data-reveal style="--reveal-delay:.08s">
+            你好，我是 <strong>{SITE.author}</strong>。<br />
+            这里是我的个人博客：放技术笔记、学习记录，以及一些偶尔冒出来的想法。
+          </p>
+
+          <p class="about-hero__loc mono" data-reveal style="--reveal-delay:.16s">
+            {SITE.location} <span aria-hidden="true">·</span> {SITE.coords}
+            <span aria-hidden="true">·</span> EST. {SITE.since}
+          </p>
+
+          <ul class="about-hero__meta" data-reveal style="--reveal-delay:.24s">
+            <li><b>{String(posts.length).padStart(2, '0')}</b><span>笔记 / NOTES</span></li>
+            <li><b>{String(tagCount).padStart(2, '0')}</b><span>标签 / TAGS</span></li>
+            <li><b>∞</b><span>好奇心 / CURIOSITY</span></li>
+          </ul>
+        </div>
+
+        <figure class="about-portrait" data-reveal="scale" style="--reveal-delay:.12s">
+          <div class="about-portrait__frame">
+            <div class="about-portrait__art" aria-hidden="true">
+              <Astrolabe />
+            </div>
+            <span class="about-portrait__plate mono">FIG. 02 — THE OBSERVER</span>
+            <span class="about-portrait__corner about-portrait__corner--tl" aria-hidden="true"></span>
+            <span class="about-portrait__corner about-portrait__corner--tr" aria-hidden="true"></span>
+            <span class="about-portrait__corner about-portrait__corner--bl" aria-hidden="true"></span>
+            <span class="about-portrait__corner about-portrait__corner--br" aria-hidden="true"></span>
+          </div>
+          <figcaption class="about-portrait__cap">
+            <span>OBSERVER / 21NC</span>
+            <i aria-hidden="true"></i>
+            <span>{SITE.coords}</span>
+          </figcaption>
+        </figure>
+      </div>
     </header>
 
-    <div class="prose">
-      <p>
-        你好，我是 {SITE.author}。这里是我的个人博客，用来放过一些技术笔记、学习记录，
-        以及偶尔冒出来的想法。
-      </p>
+    <div class="wrap about-body">
+      <!-- 01 · 我是谁 -->
+      <section class="about-section" aria-labelledby="about-who">
+        <header class="about-section__head" data-reveal="fade">
+          <span class="index-num" aria-hidden="true">01</span>
+          <div>
+            <p class="section-kicker">WHO I AM</p>
+            <h2 id="about-who">我是谁</h2>
+          </div>
+        </header>
 
-      <h2>最近在干嘛</h2>
-      <ul>
-        <li>florr.io 杀戮尖塔2 MC地下城2 Minecraft</li>
-        <li>折腾一些自己感兴趣的项目</li>
-        <li>吃饭，睡觉，摆烂</li>
-      </ul>
+        <div class="about-section__body" data-reveal>
+          <div class="about-prose">
+            <p class="about-prose__lead">一个在读学生，写代码，看星星，也记点东西。</p>
+            <p>
+              你好，我是 {SITE.author}，目前在 {SITE.location.split(',')[0]} 读书。
+              这里是我的个人博客，用来放技术笔记、学习记录，以及偶尔冒出来的想法。
+              没有什么宏大的叙事，只是一个人认真生活过的痕迹。
+            </p>
+            <p>
+              我喜欢把东西弄明白的过程 —— 无论是调通一块板子、读一段源码，
+              还是终于想清楚一个困扰很久的问题。写下来，是为了记得，
+              也是为了确认自己真的懂了。
+            </p>
+          </div>
 
-      <h2>这个站怎么搭的</h2>
-      <p>
-        用 <a href="https://astro.build" rel="noopener">Astro</a> 生成静态页面，
-        托管在 <strong>Azure Static Web Apps</strong> 免费层上。
-        每次向 GitHub 仓库推代码，Azure 会自动重新构建并发布，同时刷新全球 CDN 和 HTTPS 证书。
-        整站成本是 0。
-      </p>
+          <dl class="about-facts">
+            <div class="about-facts__row">
+              <dt>NAME</dt>
+              <dd>{SITE.author}</dd>
+            </div>
+            <div class="about-facts__row">
+              <dt>BASED</dt>
+              <dd>{SITE.location}</dd>
+            </div>
+            <div class="about-facts__row">
+              <dt>COORDS</dt>
+              <dd>{SITE.coords}</dd>
+            </div>
+            <div class="about-facts__row">
+              <dt>STATUS</dt>
+              <dd><span class="live-dot" aria-hidden="true"></span>在读 · 持续更新中</dd>
+            </div>
+            <div class="about-facts__row">
+              <dt>WRITING</dt>
+              <dd>{SITE.since} — 至今 <span class="about-facts__faint">· {posts.length} 篇</span></dd>
+            </div>
+            <div class="about-facts__row">
+              <dt>STACK</dt>
+              <dd>Astro · Azure SWA · Sveltia CMS</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
 
-      <h2>联系</h2>
-      <p>
-        欢迎通过下面的方式找我：
-      </p>
-      <ul>
-        {SITE.social.map((s) => <li><a href={s.href} rel="me noopener">{s.label}</a></li>)}
-      </ul>
+      <!-- 02 · 最近在干嘛 -->
+      <section class="about-section" aria-labelledby="about-doing">
+        <header class="about-section__head" data-reveal="fade">
+          <span class="index-num" aria-hidden="true">02</span>
+          <div>
+            <p class="section-kicker">WHAT I'M DOING</p>
+            <h2 id="about-doing">最近在干嘛</h2>
+          </div>
+        </header>
+
+        <ol class="about-doing" data-reveal>
+          {
+            doing.map((item) => (
+              <li class="about-doing__item">
+                <span class="about-doing__no mono" aria-hidden="true">{item.no}</span>
+                <span class="about-doing__text">
+                  <span class="about-doing__title serif">{item.title}</span>
+                  <span class="about-doing__desc">{item.desc}</span>
+                </span>
+                <span class="about-doing__tag mono">{item.tag}</span>
+              </li>
+            ))
+          }
+        </ol>
+      </section>
+
+      <!-- 03 · 这个站怎么搭的 -->
+      <section class="about-section" aria-labelledby="about-colophon">
+        <header class="about-section__head" data-reveal="fade">
+          <span class="index-num" aria-hidden="true">03</span>
+          <div>
+            <p class="section-kicker">COLOPHON</p>
+            <h2 id="about-colophon">这个站怎么搭的</h2>
+          </div>
+        </header>
+
+        <div class="about-section__body about-section__body--colophon" data-reveal>
+          <div class="about-prose">
+            <p class="about-prose__lead">一张星图，几个静态文件，和一张 0 元账单。</p>
+            <p>
+              整站用 <strong>Astro</strong> 生成静态页面，托管在 <strong>Azure Static Web Apps</strong> 免费层。
+              每次向 GitHub 仓库推代码，Azure 会自动重新构建、发布，并顺手刷新全球 CDN 与 HTTPS 证书 ——
+              不用管服务器，也不会产生费用。
+            </p>
+            <p>
+              写作用 Markdown；代码高亮用 Shiki；平滑滚动用 Lenis；
+              文章内容可以在 Sveltia CMS 里可视化编辑。都是很安静的工具，不抢文字的风头。
+            </p>
+
+            <div class="about-stack">
+              <p class="about-stack__label mono">STACK / 技术栈</p>
+              <ul class="about-stack__chips">
+                {stack.map((item) => <li class="about-chip">{item}</li>)}
+              </ul>
+            </div>
+          </div>
+
+          <ol class="about-flow" aria-label="构建发布流程">
+            {
+              flow.map((item) => (
+                <li class="about-flow__step">
+                  <span class="about-flow__no mono">{item.step}</span>
+                  <span class="about-flow__title">{item.title}</span>
+                  <span class="about-flow__desc mono">{item.desc}</span>
+                </li>
+              ))
+            }
+          </ol>
+        </div>
+      </section>
+
+      <!-- 04 · 联系 -->
+      <section class="about-section about-section--contact" aria-labelledby="about-contact">
+        <header class="about-section__head" data-reveal="fade">
+          <span class="index-num" aria-hidden="true">04</span>
+          <div>
+            <p class="section-kicker">SIGNAL</p>
+            <h2 id="about-contact">联系</h2>
+          </div>
+        </header>
+
+        <div class="about-contact" data-reveal>
+          <div class="about-contact__text">
+            <p class="about-contact__lead serif">如果你也有话想说，写信给我。</p>
+            <p class="about-contact__note">
+              留言也可以 —— 每篇文章底部都有一个「留言 / TRANSMISSIONS」区。
+              回复可能不快，但都会看。
+            </p>
+          </div>
+
+          <div class="about-contact__actions">
+            <a class="btn" href={email?.href ?? 'mailto:261164313@qq.com'} data-magnetic>
+              {email?.label ?? 'Email'}
+              <span class="btn-arrow" aria-hidden="true">↗</span>
+            </a>
+            <a class="btn btn--ghost" href={github?.href ?? 'https://github.com/ZinChl'} rel="me noopener" target="_blank" data-magnetic>
+              GitHub
+              <span class="btn-arrow" aria-hidden="true">↗</span>
+            </a>
+          </div>
+
+          <ul class="about-contact__links" aria-label="社交链接">
+            {
+              SITE.social.map((item) => (
+                <li>
+                  <a
+                    href={item.href}
+                    rel={item.href.startsWith('http') ? 'me noopener' : undefined}
+                    target={item.href.startsWith('http') ? '_blank' : undefined}>
+                    <Icon name={socialIcon(item.icon)} size={13} />
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
+            <li>
+              <a href="/rss.xml"><Icon name="rss" size={13} />RSS</a>
+            </li>
+          </ul>
+
+          <p class="about-contact__coords mono">
+            {SITE.location} <span aria-hidden="true">·</span> {SITE.coords}
+            <span aria-hidden="true">·</span> 21NC / THE ASTRAL ARCHIVE
+          </p>
+        </div>
+      </section>
+
+      <div class="about-signature" data-reveal="fade">
+        <span class="about-signature__star" aria-hidden="true">✦</span>
+        <p class="about-signature__line serif">写代码，看星星，记点东西。</p>
+        <p class="about-signature__name mono">— {SITE.author}</p>
+      </div>
     </div>
-  </article>
+  </div>
 </BaseLayout>
