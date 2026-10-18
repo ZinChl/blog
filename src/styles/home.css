@@ -431,6 +431,7 @@ a.notes-feature:hover {
 .manifesto__lead em {
   font-style: italic;
   color: var(--gold);
+  white-space: nowrap;
 }
 .manifesto__lead .star-accent {
   display: inline-block;
@@ -527,6 +528,8 @@ a.notes-feature:hover {
 }
 .stat__value {
   font-family: var(--font-serif);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
   font-size: clamp(2.4rem, 4.6vw, 3.6rem);
   font-weight: 300;
   line-height: 1;

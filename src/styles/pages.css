@@ -3343,3 +3343,12 @@ html.filter-ready .archive-filter {
     transition: none;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   统计数字：Cormorant 默认是旧式数字（1 像 I），统一改成等高数字提高可读性
+   --------------------------------------------------------------------------- */
+.archive-stat dd,
+.about-hero__meta b {
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
+}
