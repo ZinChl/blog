@@ -58,8 +58,8 @@
 .hero-glow--gold {
   bottom: -20%;
   left: -10%;
-  background: radial-gradient(circle, var(--glow-gold), transparent 68%);
-  opacity: 0.4;
+  background: radial-gradient(circle, var(--glow-ice), transparent 68%);
+  opacity: 0.26;
 }
 .hero-bg::after {
   content: '';
@@ -221,7 +221,7 @@
   top: 50%;
   width: min(96vw, 1480px);
   height: auto;
-  color: var(--ink);
+  color: color-mix(in srgb, var(--ice) 52%, var(--ink));
   transform: translate(
     calc(-50% + var(--orbit-x, 0px)),
     calc(-50% + var(--orbit-y, 0px))

@@ -117,7 +117,7 @@
 }
 
 .archive-hero__sigil svg > circle:last-of-type {
-  fill: var(--gold);
+  fill: var(--ice);
 }
 
 .archive-hero__sigil svg path[fill] {
@@ -194,7 +194,7 @@
   font-style: normal;
   font-weight: 400;
   color: transparent;
-  background: linear-gradient(115deg, var(--gold-deep) 0%, var(--gold-bright) 48%, var(--gold) 100%);
+  background: linear-gradient(115deg, var(--ice-deep) 0%, var(--ice-bright) 48%, var(--ice) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   padding-right: 0.04em;
@@ -378,7 +378,7 @@ html.filter-ready .archive-filter {
 }
 
 .archive-empty__star {
-  color: var(--gold);
+  color: var(--ice);
   font-style: normal;
   font-size: 0.8rem;
 }
@@ -516,7 +516,7 @@ html.filter-ready .archive-filter {
   }
 
   .archive-item:hover .archive-item__no {
-    color: var(--gold-on-invert);
+    color: var(--ice-on-invert);
   }
 }
 
@@ -642,7 +642,7 @@ html.filter-ready .archive-filter {
   align-items: center;
   gap: 1rem;
   font-size: 0.72rem;
-  color: var(--gold);
+  color: var(--ice);
 }
 
 .archive-foot__mark::before,
@@ -667,7 +667,7 @@ html.filter-ready .archive-filter {
 }
 
 .archive-foot__title span {
-  color: var(--gold);
+  color: var(--ice);
 }
 
 .archive-foot__sub {
@@ -846,7 +846,7 @@ html.filter-ready .archive-filter {
 .note-head__ornament i {
   font-style: normal;
   font-size: 0.58rem;
-  color: var(--gold);
+  color: var(--ice);
   opacity: 0.9;
 }
 
@@ -922,7 +922,7 @@ html.filter-ready .archive-filter {
   font-weight: 400;
   line-height: 0.8;
   letter-spacing: -0.04em;
-  color: var(--gold);
+  color: var(--ice);
 }
 
 /* 由脚本判断：首字是横线型字符时不做下沉，否则看起来只是一道金色的横杠。
@@ -965,7 +965,7 @@ html.filter-ready .archive-filter {
   font-size: 0.58rem;
   font-weight: 500;
   letter-spacing: 0.24em;
-  color: var(--gold);
+  color: var(--ice);
 }
 
 .prose h3 {
@@ -999,7 +999,7 @@ html.filter-ready .archive-filter {
   font-family: var(--font-mono);
   font-size: 0.6em;
   font-weight: 400;
-  color: var(--gold);
+  color: var(--ice);
   opacity: 0;
   transition:
     opacity 0.3s var(--ease-out),
@@ -1014,16 +1014,16 @@ html.filter-ready .archive-filter {
 
 .prose .heading-anchor:hover {
   opacity: 1;
-  color: var(--gold-bright);
+  color: var(--ice-bright);
   text-decoration: none;
 }
 
 /* ---- 行内元素 ---- */
 
 .prose a {
-  color: var(--gold-bright);
+  color: var(--ice-bright);
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--gold) 38%, transparent);
+  text-decoration-color: color-mix(in srgb, var(--ice) 38%, transparent);
   text-decoration-thickness: 1px;
   text-underline-offset: 0.24em;
   transition:
@@ -1032,8 +1032,8 @@ html.filter-ready .archive-filter {
 }
 
 .prose a:hover {
-  color: var(--gold);
-  text-decoration-color: var(--gold);
+  color: var(--ice);
+  text-decoration-color: var(--ice);
 }
 
 .prose strong {
@@ -1046,7 +1046,7 @@ html.filter-ready .archive-filter {
 .prose em {
   font-style: normal;
   font-weight: 600;
-  color: var(--gold-bright);
+  color: var(--ice-bright);
 }
 
 .prose del {
@@ -1054,7 +1054,7 @@ html.filter-ready .archive-filter {
 }
 
 .prose mark {
-  background: color-mix(in srgb, var(--gold) 22%, transparent);
+  background: color-mix(in srgb, var(--ice) 22%, transparent);
   color: var(--ink);
   padding: 0 0.15em;
 }
@@ -1064,7 +1064,7 @@ html.filter-ready .archive-filter {
   position: relative;
   margin: 2.2em 0;
   padding: 1.25rem 1.5rem 1.25rem 1.8rem;
-  border-left: 1px solid var(--gold);
+  border-left: 1px solid var(--ice);
   border-radius: 0;
   background: linear-gradient(120deg, var(--surface), transparent 88%);
   font-family: var(--font-sans);
@@ -1083,7 +1083,7 @@ html.filter-ready .archive-filter {
   font-size: 3rem;
   font-weight: 400;
   line-height: 1;
-  color: var(--gold);
+  color: var(--ice);
   opacity: 0.22;
   font-style: normal;
 }
@@ -1120,7 +1120,7 @@ html.filter-ready .archive-filter {
   top: 0.86em;
   font-size: 0.58em;
   line-height: 1;
-  color: var(--gold);
+  color: var(--ice);
   opacity: 0.9;
 }
 
@@ -1142,7 +1142,7 @@ html.filter-ready .archive-filter {
   font-family: var(--font-mono);
   font-size: 0.6rem;
   letter-spacing: 0.08em;
-  color: var(--gold);
+  color: var(--ice);
 }
 
 .prose li > ul,
@@ -1151,7 +1151,7 @@ html.filter-ready .archive-filter {
 }
 
 .prose li::marker {
-  color: var(--gold);
+  color: var(--ice);
 }
 
 /* 图片 */
@@ -1194,7 +1194,7 @@ html.filter-ready .archive-filter {
   font-size: 0.62rem;
   letter-spacing: 1.5em;
   padding-left: 1.5em;
-  color: var(--gold);
+  color: var(--ice);
   opacity: 0.72;
 }
 
@@ -1224,7 +1224,7 @@ html.filter-ready .archive-filter {
   font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--ice);
   text-align: left;
   white-space: nowrap;
 }
@@ -1260,7 +1260,7 @@ html.filter-ready .archive-filter {
   background: color-mix(in srgb, var(--surface-2) 75%, transparent);
   font-family: var(--font-mono);
   font-size: 0.84em;
-  color: var(--gold-bright);
+  color: var(--ice-bright);
   white-space: nowrap;
 }
 
@@ -1284,10 +1284,10 @@ html.filter-ready .archive-filter {
   /* Shiki 会写内联 background-color，必须覆盖；金色角标用背景层拼出来 */
   background-color: var(--bg-code) !important;
   background-image:
-    linear-gradient(var(--gold-deep), var(--gold-deep)),
-    linear-gradient(var(--gold-deep), var(--gold-deep)),
-    linear-gradient(var(--gold-deep), var(--gold-deep)),
-    linear-gradient(var(--gold-deep), var(--gold-deep));
+    linear-gradient(var(--ice-deep), var(--ice-deep)),
+    linear-gradient(var(--ice-deep), var(--ice-deep)),
+    linear-gradient(var(--ice-deep), var(--ice-deep)),
+    linear-gradient(var(--ice-deep), var(--ice-deep));
   background-repeat: no-repeat;
   background-size:
     14px 1px,
@@ -1386,12 +1386,12 @@ html.filter-ready .archive-filter {
 }
 
 .code-copy:hover {
-  color: var(--gold-bright);
-  border-color: var(--gold);
+  color: var(--ice-bright);
+  border-color: var(--ice);
 }
 
 .code-copy.is-copied {
-  color: var(--gold-bright);
+  color: var(--ice-bright);
   border-color: var(--line-strong);
 }
 
@@ -1416,7 +1416,7 @@ html.filter-ready .archive-filter {
   font-size: 0.56rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--ice);
 }
 
 .toc__eyebrow em {
@@ -1463,9 +1463,9 @@ html.filter-ready .archive-filter {
 }
 
 .toc__link.is-active {
-  color: var(--gold-bright);
-  border-left-color: var(--gold);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--gold) 8%, transparent), transparent);
+  color: var(--ice-bright);
+  border-left-color: var(--ice);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ice) 8%, transparent), transparent);
 }
 
 .toc__item--h3 .toc__link {
@@ -1491,7 +1491,7 @@ html.filter-ready .archive-filter {
 }
 
 .toc__progress-value {
-  color: var(--gold);
+  color: var(--ice);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1505,7 +1505,7 @@ html.filter-ready .archive-filter {
 .toc__progress-bar {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--gold-deep), var(--gold-bright));
+  background: linear-gradient(90deg, var(--ice-deep), var(--ice-bright));
   transform: scaleX(0);
   transform-origin: 0 50%;
   transition: transform 0.15s linear;
@@ -1558,7 +1558,7 @@ html.filter-ready .archive-filter {
   width: 3.4rem;
   height: 3.4rem;
   flex: none;
-  color: var(--gold-on-invert);
+  color: var(--ice-on-invert);
 }
 
 .note-author__ring {
@@ -1596,7 +1596,7 @@ html.filter-ready .archive-filter {
   font-size: 0.52rem;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--gold-on-invert);
+  color: var(--ice-on-invert);
 }
 
 .note-author__name {
@@ -1685,7 +1685,7 @@ html.filter-ready .archive-filter {
   font-size: 0.54rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--ice);
 }
 
 .note-pager__title {
@@ -1699,7 +1699,7 @@ html.filter-ready .archive-filter {
 }
 
 .note-pager__card:hover .note-pager__title {
-  color: var(--gold-bright);
+  color: var(--ice-bright);
 }
 
 .note-pager__date {
@@ -1763,7 +1763,7 @@ html.filter-ready .archive-filter {
 .about-hero__title em {
   font-style: normal;
   font-weight: 400;
-  color: var(--gold);
+  color: var(--ice);
 }
 
 .about-hero__latin {
@@ -1857,7 +1857,7 @@ html.filter-ready .archive-filter {
   border-radius: 0;
   background:
     radial-gradient(58% 50% at 50% 40%, var(--glow-ice), transparent 68%),
-    radial-gradient(58% 52% at 50% 78%, color-mix(in srgb, var(--gold) 7%, transparent), transparent 66%);
+    radial-gradient(58% 52% at 50% 78%, color-mix(in srgb, var(--ice) 7%, transparent), transparent 66%);
   overflow: hidden;
 }
 
@@ -2083,14 +2083,14 @@ html.filter-ready .archive-filter {
 }
 
 .about-prose a {
-  color: var(--gold-bright);
+  color: var(--ice-bright);
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--gold) 38%, transparent);
+  text-decoration-color: color-mix(in srgb, var(--ice) 38%, transparent);
   text-underline-offset: 0.24em;
 }
 
 .about-prose a:hover {
-  text-decoration-color: var(--gold);
+  text-decoration-color: var(--ice);
 }
 
 .about-prose strong {
@@ -2165,7 +2165,7 @@ html.filter-ready .archive-filter {
   padding-top: 0.5rem;
   font-size: 0.56rem;
   letter-spacing: 0.16em;
-  color: var(--gold);
+  color: var(--ice);
 }
 
 .about-doing__text {
@@ -2240,7 +2240,7 @@ html.filter-ready .archive-filter {
 }
 
 .about-chip:hover {
-  color: var(--gold-bright);
+  color: var(--ice-bright);
   border-color: var(--line);
 }
 
@@ -2269,7 +2269,7 @@ html.filter-ready .archive-filter {
   grid-row: span 2;
   font-size: 0.54rem;
   letter-spacing: 0.14em;
-  color: var(--gold);
+  color: var(--ice);
   padding-top: 0.25rem;
 }
 
@@ -2341,7 +2341,7 @@ html.filter-ready .archive-filter {
 }
 
 .about-contact__links a:hover {
-  color: var(--gold-bright);
+  color: var(--ice-bright);
   text-decoration: none;
 }
 
@@ -2367,7 +2367,7 @@ html.filter-ready .archive-filter {
 
 .about-signature__star {
   font-size: 0.72rem;
-  color: var(--gold);
+  color: var(--ice);
 }
 
 .about-signature__line {
@@ -2416,7 +2416,7 @@ html.filter-ready .archive-filter {
   border-radius: 50%;
   background:
     radial-gradient(circle at 46% 46%, var(--glow-ice) 0%, transparent 58%),
-    radial-gradient(circle at 60% 64%, color-mix(in srgb, var(--gold) 8%, transparent) 0%, transparent 56%);
+    radial-gradient(circle at 60% 64%, color-mix(in srgb, var(--ice) 8%, transparent) 0%, transparent 56%);
   filter: blur(20px);
   opacity: 0.32;
 }
@@ -2460,7 +2460,7 @@ html.filter-ready .archive-filter {
   height: 12px;
   margin-left: -0.5px;
   border-radius: 0;
-  background: var(--gold);
+  background: var(--ice);
   box-shadow: none;
 }
 
@@ -2603,7 +2603,7 @@ html.filter-ready .archive-filter {
 .error-quote em {
   font-style: normal;
   font-weight: 400;
-  color: var(--gold);
+  color: var(--ice);
 }
 
 .error-sub {
@@ -2685,7 +2685,7 @@ html.filter-ready .archive-filter {
 }
 
 .comments__eyebrow {
-  color: var(--gold);
+  color: var(--ice);
 }
 
 .comments__title {
@@ -2774,7 +2774,7 @@ html.filter-ready .archive-filter {
   content: '✦';
   margin-right: 0.45em;
   font-size: 0.5em;
-  color: var(--gold);
+  color: var(--ice);
   vertical-align: 0.45em;
   opacity: 0.85;
 }
@@ -2851,7 +2851,7 @@ html.filter-ready .archive-filter {
   font-size: 0.56rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--ice);
 }
 
 .comment-hint {
@@ -2889,11 +2889,11 @@ html.filter-ready .archive-filter {
 .comment-field input:focus,
 .comment-field textarea:focus {
   outline: none;
-  border-color: var(--gold);
+  border-color: var(--ice);
   background: color-mix(in srgb, var(--bg) 82%, transparent);
   box-shadow:
-    0 0 0 3px color-mix(in srgb, var(--gold) 14%, transparent),
-    0 12px 32px -20px var(--gold);
+    0 0 0 3px color-mix(in srgb, var(--ice) 14%, transparent),
+    0 12px 32px -20px var(--ice);
 }
 
 /* 蜜罐字段：移出可视区域，保留在 DOM 里给机器人上钩 */
@@ -2937,8 +2937,8 @@ html.filter-ready .archive-filter {
 }
 
 .comment-submit:hover:not(:disabled) {
-  background: var(--gold);
-  border-color: var(--gold);
+  background: var(--ice);
+  border-color: var(--ice);
   color: var(--bg);
   transform: translateY(-2px);
   box-shadow: none;
@@ -3032,7 +3032,7 @@ html.filter-ready .archive-filter {
     font-size: 0.58rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--gold);
+    color: var(--ice);
   }
 
   .toc__summary::-webkit-details-marker {

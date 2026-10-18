@@ -48,14 +48,14 @@
     will-change: transform;
   }
 
-  /* 金色小圆点：几乎实时跟随 */
+  /* 冰蓝小圆点：几乎实时跟随；金色只留给极少数粒子 */
   .cursor-dot {
     width: 5px;
     height: 5px;
     margin: -2.5px 0 0 -2.5px;
     border-radius: 50%;
-    background: var(--gold, #d6b36a);
-    box-shadow: 0 0 8px color-mix(in srgb, var(--gold, #d6b36a) 55%, transparent);
+    background: var(--ice, #9fe6ff);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--ice, #9fe6ff) 55%, transparent);
     transition:
       opacity 0.22s ease,
       box-shadow 0.3s ease;
@@ -76,15 +76,15 @@
     height: var(--p-size, 3px);
     margin: calc(var(--p-size, 3px) / -2) 0 0 calc(var(--p-size, 3px) / -2);
     border-radius: 50%;
-    background: var(--gold, #d6b36a);
-    box-shadow: 0 0 7px color-mix(in srgb, var(--gold, #d6b36a) 65%, transparent);
+    background: var(--ice, #9fe6ff);
+    box-shadow: 0 0 7px color-mix(in srgb, var(--ice, #9fe6ff) 65%, transparent);
     opacity: 0;
     will-change: transform, opacity;
     pointer-events: none;
   }
   :global(.cursor-particle[data-tone='iris']) {
-    background: var(--iris, #b4abf0);
-    box-shadow: 0 0 7px color-mix(in srgb, var(--iris, #b4abf0) 60%, transparent);
+    background: var(--gold, #e6b45f);
+    box-shadow: 0 0 7px color-mix(in srgb, var(--gold, #e6b45f) 60%, transparent);
   }
 
   /* 滞后的描边圆环 */
@@ -120,8 +120,8 @@
     opacity: 0;
   }
   .cursor.is-particle.is-hover .cursor-ring {
-    border-color: color-mix(in srgb, var(--gold, #d6b36a) 34%, transparent);
-    background: color-mix(in srgb, var(--gold, #d6b36a) 4%, transparent);
+    border-color: color-mix(in srgb, var(--ice, #9fe6ff) 34%, transparent);
+    background: color-mix(in srgb, var(--ice, #9fe6ff) 4%, transparent);
   }
 
   /* 按下时轻微收缩 */

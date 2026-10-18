@@ -435,8 +435,11 @@ ol {
 
 .spark {
   display: inline-block;
-  color: var(--gold);
+  color: var(--ice);
   line-height: 1;
+}
+.spark--gold {
+  color: var(--gold);
 }
 
 /* ---------------------------------------------------------------
@@ -467,11 +470,11 @@ ol {
     box-shadow 0.4s var(--ease-out);
 }
 .btn:hover {
-  background: var(--gold);
-  border-color: var(--gold);
+  background: var(--ice);
+  border-color: var(--ice);
   color: var(--bg);
   transform: translateY(-2px);
-  box-shadow: 0 14px 40px -20px var(--glow-gold);
+  box-shadow: 0 14px 40px -20px var(--glow-ice);
   text-decoration: none;
 }
 .btn .btn-arrow {

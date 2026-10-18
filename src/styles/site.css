@@ -51,7 +51,7 @@
   height: 100%;
   transform: scaleX(0);
   transform-origin: 0 50%;
-  background: linear-gradient(90deg, var(--ice-deep), var(--ice), var(--ink), var(--gold));
+  background: linear-gradient(90deg, var(--ice-deep), var(--ice), var(--ink), var(--ice-bright));
   box-shadow: 0 0 10px var(--glow-ice);
   will-change: transform;
 }
@@ -197,7 +197,7 @@
 }
 .site-nav__link[aria-current='page']::after {
   transform: scaleX(1);
-  background: var(--gold);
+  background: var(--ice);
 }
 
 /* 右侧动作区 */
@@ -386,7 +386,7 @@ body.menu-open .mobile-menu {
   left: 0;
   width: 100%;
   height: 1px;
-  background: linear-gradient(90deg, var(--gold), var(--ink-3) 38%, var(--ice-deep) 76%, transparent);
+  background: linear-gradient(90deg, transparent, var(--ice-deep) 24%, var(--ice) 56%, var(--ink-3) 84%, transparent);
   opacity: 0.75;
 }
 
@@ -409,7 +409,7 @@ body.menu-open .mobile-menu {
   transition: color 0.4s var(--ease-out);
 }
 .footer-brand:hover .footer-wordmark {
-  color: var(--gold);
+  color: var(--ice);
 }
 .footer-brand p {
   max-width: 26rem;
@@ -433,7 +433,7 @@ body.menu-open .mobile-menu {
   font-weight: 500;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--ice);
   margin-bottom: 1.05rem;
 }
 .footer-col ul {
@@ -500,7 +500,7 @@ body.menu-open .mobile-menu {
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: var(--gold);
+  background: var(--ice);
   opacity: 0.7;
 }
 
@@ -590,11 +590,11 @@ body.menu-open .mobile-menu {
 }
 .marquee__item .spark {
   font-size: 0.76rem;
-  color: var(--gold);
+  color: var(--ice);
   opacity: 0.9;
 }
-.marquee__item:nth-child(3n) .spark {
-  color: var(--ice);
+.marquee__item:nth-child(5n) .spark {
+  color: var(--gold);
 }
 @keyframes marquee-scroll {
   to {
@@ -634,7 +634,7 @@ body.menu-open .mobile-menu {
 .section-head h2 em {
   font-style: normal;
   font-weight: 500;
-  color: var(--gold);
+  color: var(--ice);
 }
 .section-head .section-kicker {
   font-family: var(--font-mono);
@@ -663,7 +663,7 @@ body.menu-open .mobile-menu {
   color: var(--invert-ink-3);
 }
 .section--invert .section-head h2 em {
-  color: var(--gold-on-invert);
+  color: var(--ice-on-invert);
 }
 .section--invert .index-num {
   color: color-mix(in srgb, var(--invert-fg) 42%, transparent);
