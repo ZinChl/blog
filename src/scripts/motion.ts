@@ -13,7 +13,7 @@
  *     拦截页内锚点 a[href^="#"]，预留 -90px 的页头高度。
  *  3. 页头状态：滚动超过 24px 给 header.site-header 加 .is-scrolled；
  *     同步所有 [data-scroll-progress] 的 scaleX(进度)。
- *  4. 实时时钟：[data-clock]，可选 data-tz="Europe/London"（默认 Asia/Shanghai）。
+ *  4. 实时时钟：[data-clock]，可选 data-tz="Asia/Shanghai"（默认 Asia/Shanghai）。
  *  5. 磁吸按钮：[data-magnetic] 跟随指针最多 ~6px，带回弹缓动；触屏/减少动态关闭。
  *
  * 依赖：仅 lenis（package.json 已安装）。样式部分（[data-reveal] 的初始隐藏与

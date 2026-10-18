@@ -16,7 +16,7 @@ const socialIcon = (icon: string) =>
 const doing = [
   {
     no: '01',
-    title: '在格拉斯哥大学读书',
+    title: '在电子科技大学读书',
     desc: '课业之外的时间，大多花在实验室、开发板和屏幕之间。',
     tag: 'STUDYING',
   },
@@ -50,7 +50,7 @@ const flow = [
 ];
 ---
 
-<BaseLayout title="关于" description={`关于 ${SITE.title} · ${SITE.nameCn}：一个在格拉斯哥读书的人，写代码、看星星、记点东西。`}>
+<BaseLayout title="关于" description={`关于 ${SITE.title} · ${SITE.nameCn}：一个在成都读书的人，写代码、看星星、记点东西。`}>
   <div class="about">
     <!-- 关于页题头：巨大的陈述 + 星盘「肖像」 -->
     <header class="page-hero about-hero">
@@ -72,7 +72,7 @@ const flow = [
           </p>
 
           <p class="about-hero__loc mono" data-reveal style="--reveal-delay:.16s">
-            {SITE.location} <span aria-hidden="true">·</span> {SITE.coords}
+            {SITE.locationEn} <span aria-hidden="true">·</span> {SITE.coords}
             <span aria-hidden="true">·</span> EST. {SITE.since}
           </p>
 
@@ -118,7 +118,7 @@ const flow = [
           <div class="about-prose">
             <p class="about-prose__lead">一个在读学生，写代码，看星星，也记点东西。</p>
             <p>
-              你好，我是 {SITE.author}，目前在 {SITE.location.split(',')[0]} 读书。
+              你好，我是 {SITE.author}，目前在{SITE.location}读书。
               这里是我的个人博客，用来放技术笔记、学习记录，以及偶尔冒出来的想法。
               没有什么宏大的叙事，只是一个人认真生活过的痕迹。
             </p>
@@ -279,7 +279,7 @@ const flow = [
           </ul>
 
           <p class="about-contact__coords mono">
-            {SITE.location} <span aria-hidden="true">·</span> {SITE.coords}
+            {SITE.locationEn} <span aria-hidden="true">·</span> {SITE.coords}
             <span aria-hidden="true">·</span> 21NC / THE ASTRAL ARCHIVE
           </p>
         </div>

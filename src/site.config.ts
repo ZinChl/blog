@@ -21,10 +21,16 @@ export const SITE = {
   /** 建站年份 */
   since: 2026,
   /** 所在地 & 坐标（首页信息轨 / 页脚） */
-  location: 'Glasgow, UK',
-  coords: '55.86°N / 4.25°W',
-  /** 页脚时钟时区 */
-  timeZone: 'Europe/London',
+  location: '成都 · 电子科技大学清水河校区',
+  /** 城市（正文/署名等短场景用） */
+  city: '成都',
+  /** 英文/等宽场景用的短地名 */
+  locationEn: 'UESTC · CHENGDU',
+  coords: '30.75°N / 103.94°E',
+  /** 页脚时钟时区（成都，UTC+8） */
+  timeZone: 'Asia/Shanghai',
+  /** 时钟旁的小标签 */
+  clockLabel: 'CST',
 
   /** 首页 hero 文案 */
   hero: {

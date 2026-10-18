@@ -3,19 +3,24 @@
  * Cursor.astro —「星海档案」自定义光标
  * ---------------------------------------------------------------------------
  * 仅对精确指针（鼠标 / 触控板）启用：金色小圆点 + 滞后的描边圆环。
- * 悬停 a / button / [data-cursor] 时圆环放大；若元素带 data-cursor="阅读"
- * 之类的文案，会在光标右下浮出一枚小标签。
  *
- * - (pointer: coarse) 触屏设备 / prefers-reduced-motion：完全隐藏，不挂任何监听；
+ * 交互：
+ * - 普通链接：圆环放大，圆点变淡（不再用 scale 缩放圆点——圆点靠 transform
+ *   translate 定位，scale 会把位移一起缩放，导致圆点“飞走”，这是之前的 bug）；
+ * - 按钮 / 卡片等 [data-magnetic]、[data-cursor]、button、.btn：圆点炸成一小团
+ *   金色/鸢尾紫粒子向外散开；离开时粒子从四周向指针中心聚合，重新凝成圆点；
+ * - 带 data-cursor="阅读" 的元素会浮出 mono 小标签。
+ *
+ * - (pointer: coarse) 触屏设备 / prefers-reduced-motion：完全隐藏，不挂监听；
  * - 组件 aria-hidden，不进入无障碍树，也不接管键盘焦点；
- * - 输入框 / 文本域保留系统光标，不影响输入；
- * - 支持 Astro ClientRouter 的 astro:page-load 重新初始化。
+ * - 输入框 / 文本域保留系统光标，不影响输入。
  *
- * 使用：在 <BaseLayout> 的 <body> 末尾放一次 <Cursor /> 即可。
+ * 使用：在 BaseLayout 的 <body> 末尾放一次 <Cursor /> 即可。
  */
 ---
 
 <div class="cursor" data-cursor-root aria-hidden="true">
+  <div class="cursor-particles" data-cursor-particles></div>
   <div class="cursor-dot" data-cursor-dot></div>
   <div class="cursor-ring" data-cursor-ring>
     <span class="cursor-label" data-cursor-label></span>
@@ -52,9 +57,34 @@
     background: var(--gold, #d6b36a);
     box-shadow: 0 0 8px color-mix(in srgb, var(--gold, #d6b36a) 55%, transparent);
     transition:
-      transform 0.18s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
-      opacity 0.25s ease,
-      scale 0.25s var(--ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+      opacity 0.22s ease,
+      box-shadow 0.3s ease;
+  }
+
+  /* 粒子层：圆点短暂消失，粒子从这里散开 / 聚回 */
+  .cursor-particles {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+  }
+  /* 粒子由 JS 动态创建，没有 Astro 作用域属性，必须用 :global 命中 */
+  :global(.cursor-particle) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--p-size, 3px);
+    height: var(--p-size, 3px);
+    margin: calc(var(--p-size, 3px) / -2) 0 0 calc(var(--p-size, 3px) / -2);
+    border-radius: 50%;
+    background: var(--gold, #d6b36a);
+    box-shadow: 0 0 7px color-mix(in srgb, var(--gold, #d6b36a) 65%, transparent);
+    opacity: 0;
+    will-change: transform, opacity;
+    pointer-events: none;
+  }
+  :global(.cursor-particle[data-tone='iris']) {
+    background: var(--iris, #b4abf0);
+    box-shadow: 0 0 7px color-mix(in srgb, var(--iris, #b4abf0) 60%, transparent);
   }
 
   /* 滞后的描边圆环 */
@@ -73,7 +103,7 @@
       opacity 0.25s ease;
   }
 
-  /* 悬停可交互元素：圆环放大、变金；圆点缩小 */
+  /* 悬停可交互元素：圆环放大、变金；圆点变淡（用透明度，不用 scale） */
   .cursor.is-hover .cursor-ring {
     width: 52px;
     height: 52px;
@@ -82,8 +112,16 @@
     background: color-mix(in srgb, var(--gold, #d6b36a) 8%, transparent);
   }
   .cursor.is-hover .cursor-dot {
-    scale: 0.5;
-    opacity: 0.6;
+    opacity: 0.4;
+  }
+
+  /* 粒子状态：圆点完全让位给粒子 */
+  .cursor.is-particle .cursor-dot {
+    opacity: 0;
+  }
+  .cursor.is-particle.is-hover .cursor-ring {
+    border-color: color-mix(in srgb, var(--gold, #d6b36a) 34%, transparent);
+    background: color-mix(in srgb, var(--gold, #d6b36a) 4%, transparent);
   }
 
   /* 按下时轻微收缩 */
@@ -156,12 +194,35 @@
   const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   const fineQuery = window.matchMedia(FINE_POINTER);
 
-  /** 可交互元素选择器：命中后圆环放大；带 data-cursor 的还会浮出标签 */
-  const HOVER_SELECTOR = 'a, button, [role="button"], [data-cursor], summary, label[for]';
+  /** 这些元素上会触发「圆点炸成粒子」的反馈 */
+  const PARTICLE_SELECTOR = 'button, .btn, [role="button"], [data-magnetic], [data-cursor], summary';
+  /** 一般可交互元素：圆环放大 */
+  const HOVER_SELECTOR =
+    'a, button, [role="button"], [data-cursor], [data-magnetic], summary, label[for]';
   /** 这些元素上不接管光标，保留系统行为 */
   const NATIVE_SELECTOR = 'input, textarea, select, [contenteditable="true"]';
 
   let instance: CursorState | null = null;
+
+  /** 三次缓出：聚合时先快后慢，末端轻轻碰在一起 */
+  const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
+
+  interface Particle {
+    el: HTMLSpanElement;
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    /** 聚合起点 */
+    sx: number;
+    sy: number;
+    /** 已存活毫秒 */
+    life: number;
+    /** 总时长毫秒 */
+    ttl: number;
+    mode: 'burst' | 'gather';
+    active: boolean;
+  }
 
   function bootCursor(): void {
     instance?.destroy();
@@ -177,7 +238,20 @@
     const dot = root.querySelector<HTMLElement>('[data-cursor-dot]');
     const ring = root.querySelector<HTMLElement>('[data-cursor-ring]');
     const label = root.querySelector<HTMLElement>('[data-cursor-label]');
-    if (!dot || !ring) return;
+    const particleLayer = root.querySelector<HTMLElement>('[data-cursor-particles]');
+    if (!dot || !ring || !particleLayer) return;
+
+    /* 一次性创建粒子节点，之后只更新 transform / opacity */
+    const particles: Particle[] = [];
+    const PARTICLE_COUNT = 16;
+    for (let i = 0; i < PARTICLE_COUNT; i += 1) {
+      const el = document.createElement('span');
+      el.className = 'cursor-particle';
+      if (i % 4 === 0) el.dataset.tone = 'iris';
+      el.style.setProperty('--p-size', `${2.5 + (i % 3)}px`);
+      particleLayer.appendChild(el);
+      particles.push({ el, x: 0, y: 0, vx: 0, vy: 0, sx: 0, sy: 0, life: 0, ttl: 0, mode: 'burst', active: false });
+    }
 
     /* 圆点几乎实时，圆环滞后：两套目标值 + 一个 rAF 循环 */
     const pointer = {
@@ -192,12 +266,76 @@
 
     let raf = 0;
     let last = 0;
+    let kind: 'none' | 'link' | 'particle' = 'none';
+    let particleBusy = false;
+    let particleMode = false;
     const ac = new AbortController();
     const { signal } = ac;
+
+    const anyParticleActive = (): boolean => particles.some((p) => p.active);
+
+    const hideAllParticles = (): void => {
+      for (const p of particles) {
+        p.active = false;
+        p.el.style.opacity = '0';
+      }
+    };
+
+    /** 圆点炸成粒子，向外散开 */
+    const burstParticles = (): void => {
+      if (particleMode) return;
+      particleMode = true;
+      root.classList.add('is-particle');
+      for (const p of particles) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 6 + Math.random() * 11; // px / 帧（≈ 60fps）
+        p.x = 0;
+        p.y = 0;
+        p.vx = Math.cos(angle) * speed;
+        p.vy = Math.sin(angle) * speed * 0.82;
+        p.life = 0;
+        p.ttl = 360 + Math.random() * 300;
+        p.mode = 'burst';
+        p.active = true;
+        p.el.style.opacity = '1';
+      }
+      particleBusy = true;
+      start();
+    };
+
+    /** 离开按钮：粒子从四周向指针中心聚合，最后凝成圆点 */
+    const gatherParticles = (): void => {
+      if (!particleMode) return;
+      // 如果上一次散开还没结束，直接接管为聚合
+      for (const p of particles) {
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 18 + Math.random() * 26;
+        p.sx = Math.cos(angle) * radius;
+        p.sy = Math.sin(angle) * radius * 0.86;
+        p.x = p.sx;
+        p.y = p.sy;
+        p.life = 0;
+        p.ttl = 420 + Math.random() * 240;
+        p.mode = 'gather';
+        p.active = true;
+        p.el.style.opacity = '0.9';
+      }
+      particleBusy = true;
+      start();
+    };
+
+    const finishParticles = (): void => {
+      if (anyParticleActive()) return;
+      particleBusy = false;
+      particleMode = false;
+      root.classList.remove('is-particle');
+      hideAllParticles();
+    };
 
     const render = (now: number) => {
       raf = 0;
       const dt = last ? Math.min(3, (now - last) / 16.67) : 1;
+      const dtMs = last ? Math.min(48, now - last) : 16.67;
       last = now;
       // 圆点跟随目标；圆环用更小的插值形成“拖尾”
       pointer.x += (pointer.targetX - pointer.x) * Math.min(1, 0.42 * dt);
@@ -210,21 +348,47 @@
       ring.style.setProperty('--cx', `${pointer.ringX.toFixed(2)}px`);
       ring.style.setProperty('--cy', `${pointer.ringY.toFixed(2)}px`);
 
+      // 粒子：散开用速度+阻尼，聚合用三次缓出收向中心
+      for (const p of particles) {
+        if (!p.active) continue;
+        p.life += dtMs;
+        const t = Math.min(1, p.life / p.ttl);
+        if (p.mode === 'burst') {
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.vx *= Math.pow(0.9, dt);
+          p.vy *= Math.pow(0.9, dt);
+          const opacity = Math.max(0, 1 - t * t);
+          p.el.style.opacity = opacity.toFixed(3);
+        } else {
+          const e = easeOutCubic(t);
+          p.x = p.sx * (1 - e);
+          p.y = p.sy * (1 - e);
+          p.el.style.opacity = Math.max(0, 1 - t * t * 0.9).toFixed(3);
+        }
+        p.el.style.transform = `translate3d(${(pointer.x + p.x).toFixed(2)}px, ${(pointer.y + p.y).toFixed(2)}px, 0)`;
+        if (t >= 1) {
+          p.active = false;
+          p.el.style.opacity = '0';
+        }
+      }
+      if (particleMode && !anyParticleActive()) finishParticles();
+
       const settled =
         Math.abs(pointer.targetX - pointer.ringX) < 0.1 &&
         Math.abs(pointer.targetY - pointer.ringY) < 0.1 &&
         Math.abs(pointer.targetX - pointer.x) < 0.1 &&
         Math.abs(pointer.targetY - pointer.y) < 0.1;
 
-      // 静止后停止 rAF，等下一次 pointermove 再唤醒（省电）
-      if (!settled) {
+      // 静止且粒子不活跃后停止 rAF，等下一次 pointermove 再唤醒（省电）
+      if (!settled || particleBusy) {
         raf = requestAnimationFrame(render);
       } else {
         last = 0;
       }
     };
 
-    const start = () => {
+    const start = (): void => {
       if (!raf) {
         last = 0;
         raf = requestAnimationFrame(render);
@@ -247,48 +411,86 @@
         pointer.ringY = pointer.targetY;
         root.classList.add('is-visible');
       }
-      // 贴边时把圆环归位，避免视口外坐标导致 transform 抖动
       start();
     };
 
     const onPointerLeave = () => {
       pointer.visible = false;
       root.classList.remove('is-visible', 'is-hover', 'is-labelled');
+      root.classList.remove('is-particle');
+      kind = 'none';
+      particleMode = false;
+      particleBusy = false;
+      hideAllParticles();
     };
 
-    const onPointerDown = () => root.classList.add('is-down');
+    const onPointerDown = () => {
+      root.classList.add('is-down');
+      start();
+    };
     const onPointerUp = () => root.classList.remove('is-down');
 
-    const setHover = (target: EventTarget | null) => {
+    /** 找到当前指针下最近的可交互元素 */
+    const findHit = (target: EventTarget | null): HTMLElement | null => {
       const el = target instanceof Element ? target : null;
-      if (!el) return;
-      if (el.closest(NATIVE_SELECTOR)) {
-        root.classList.remove('is-hover', 'is-labelled');
-        return;
-      }
-      const hit = el.closest<HTMLElement>(HOVER_SELECTOR);
+      if (!el) return null;
+      if (el.closest(NATIVE_SELECTOR)) return null;
+      return el.closest<HTMLElement>(HOVER_SELECTOR);
+    };
+
+    const isParticleTarget = (el: HTMLElement | null): boolean =>
+      !!el?.closest(PARTICLE_SELECTOR);
+
+    /** 根据命中元素更新圆环 / 标签 / 粒子状态 */
+    const applyHover = (hit: HTMLElement | null, target?: Element | null): void => {
       if (!hit) {
+        if (kind === 'particle') gatherParticles();
+        kind = 'none';
         root.classList.remove('is-hover', 'is-labelled');
         return;
       }
       root.classList.add('is-hover');
-      const text = hit.getAttribute('data-cursor') || '';
-      if (label) {
-        if (text) {
-          label.textContent = text;
-          root.classList.add('is-labelled');
-        } else {
-          root.classList.remove('is-labelled');
-        }
+      kind = isParticleTarget(hit) ? 'particle' : 'link';
+      if (kind === 'particle') burstParticles();
+
+      const text =
+        hit.getAttribute('data-cursor') ||
+        (target?.closest<HTMLElement>('[data-cursor]')?.getAttribute('data-cursor') ?? '');
+      if (label && text) {
+        label.textContent = text;
+        root.classList.add('is-labelled');
+      } else {
+        root.classList.remove('is-labelled');
       }
     };
 
-    const onPointerOver = (event: PointerEvent) => setHover(event.target);
+    const onPointerOver = (event: PointerEvent) => {
+      applyHover(findHit(event.target), event.target instanceof Element ? event.target : null);
+    };
 
     const onPointerOut = (event: PointerEvent) => {
-      const related = event.relatedTarget;
-      if (!(related instanceof Element) || !related.closest(HOVER_SELECTOR)) {
+      const related = event.relatedTarget instanceof Element ? event.relatedTarget : null;
+      // 在同一个可交互元素内部移动：不做状态切换
+      if (related) {
+        const currentHit = event.target instanceof Element ? event.target.closest(HOVER_SELECTOR) : null;
+        if (currentHit && (currentHit === related.closest(HOVER_SELECTOR) || currentHit.contains(related))) {
+          return;
+        }
+      }
+      if (!related || !related.closest(HOVER_SELECTOR)) {
+        // 移出所有可交互元素：聚合后恢复圆点
+        if (kind === 'particle') gatherParticles();
+        kind = 'none';
         root.classList.remove('is-hover', 'is-labelled');
+        start();
+        return;
+      }
+      // 从按钮移到普通链接：粒子聚合回圆点，交给接下来的 pointerover 处理
+      if (kind === 'particle' && !related.closest(PARTICLE_SELECTOR)) {
+        gatherParticles();
+        kind = 'none';
+        root.classList.remove('is-hover', 'is-labelled');
+        start();
       }
     };
 
@@ -316,17 +518,17 @@
         if (raf) cancelAnimationFrame(raf);
         raf = 0;
         document.documentElement.classList.remove('has-custom-cursor');
-        root.classList.remove('is-visible', 'is-hover', 'is-labelled', 'is-down');
+        root.classList.remove('is-visible', 'is-hover', 'is-labelled', 'is-down', 'is-particle');
         ring.style.removeProperty('--cx');
         ring.style.removeProperty('--cy');
         dot.style.removeProperty('--cx');
         dot.style.removeProperty('--cy');
+        hideAllParticles();
         instance = null;
       },
     };
   }
 
-  // 模块可能只会执行一次（ClientRouter 导航时），用 page-load 重新绑定
   const w = window as Window & { __cursorBound?: boolean };
   if (!w.__cursorBound) {
     w.__cursorBound = true;

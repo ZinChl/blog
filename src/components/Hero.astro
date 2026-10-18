@@ -104,9 +104,9 @@ const titleChars = SITE.title.split('');
       <span class="hero-rail__item"><b>{SITE.title.toUpperCase()}</b> / {SITE.nameCn}</span>
     </div>
     <div class="hero-rail__group">
-      <span class="hero-rail__item">{SITE.location}</span>
+      <span class="hero-rail__item">{SITE.locationEn}</span>
       <span class="hero-rail__item">{SITE.coords}</span>
-      <span class="hero-rail__item"><span class="clock" data-clock data-tz={SITE.timeZone}>--:--:--</span> LCL</span>
+      <span class="hero-rail__item"><span class="clock" data-clock data-tz={SITE.timeZone}>--:--:--</span> {SITE.clockLabel}</span>
     </div>
     <div class="hero-rail__group">
       <a class="hero-scroll" href="#recent">

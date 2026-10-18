@@ -397,8 +397,8 @@ body.menu-open .mobile-menu {
 .footer-top {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 0.7fr));
-  gap: clamp(2rem, 5vw, 4rem);
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.66fr) minmax(0, 0.66fr) minmax(0, 0.95fr);
+  gap: clamp(1.6rem, 3.6vw, 3rem);
   padding-block: clamp(3rem, 6vw, 5rem) clamp(2.5rem, 4vw, 3.5rem);
 }
 .footer-brand .footer-wordmark {
@@ -462,6 +462,8 @@ body.menu-open .mobile-menu {
   color: var(--ink-3);
   font-size: 0.82rem;
   line-height: 1.9;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .footer-bottom {
