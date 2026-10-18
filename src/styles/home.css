@@ -59,8 +59,8 @@
     border-color 0.35s var(--ease-out);
 }
 .entry:hover {
-  background: var(--ink);
-  color: var(--bg);
+  background: var(--surface-2);
+  color: var(--ink);
   text-decoration: none;
 }
 .entry:last-child {
@@ -74,7 +74,7 @@
   transition: color 0.3s var(--ease-out);
 }
 .entry:hover .entry__no {
-  color: var(--gold-on-invert);
+  color: var(--gold);
 }
 
 .entry__date {
@@ -84,7 +84,7 @@
   transition: color 0.3s var(--ease-out);
 }
 .entry:hover .entry__date {
-  color: var(--invert-ink-2);
+  color: var(--ink-2);
 }
 
 .entry__title {
@@ -106,7 +106,7 @@
   transition: color 0.3s var(--ease-out);
 }
 .entry:hover .entry__tags {
-  color: var(--invert-ink-2);
+  color: var(--ink-2);
 }
 
 .entry__arrow {
@@ -120,7 +120,7 @@
     transform 0.35s var(--ease-out);
 }
 .entry:hover .entry__arrow {
-  color: var(--ice-on-invert);
+  color: var(--ice);
   transform: translate(3px, -3px);
 }
 
@@ -295,12 +295,12 @@
   font-weight: 400;
   line-height: 1.42;
   letter-spacing: -0.005em;
-  color: var(--invert-fg);
+  color: var(--ink);
   text-wrap: balance;
 }
 .manifesto__lead em {
   font-style: normal;
-  color: var(--gold-on-invert);
+  color: var(--gold);
   white-space: nowrap;
 }
 .manifesto__lead .star-accent {
@@ -308,12 +308,12 @@
   font-size: 0.5em;
   vertical-align: 0.5em;
   margin-inline: 0.15em;
-  color: var(--ice-on-invert);
+  color: var(--ice);
 }
 .manifesto__body {
   margin-top: clamp(1.2rem, 2.6vw, 1.8rem);
   max-width: 36rem;
-  color: var(--invert-ink-2);
+  color: var(--ink-2);
   font-size: 0.94rem;
   line-height: 1.95;
   text-wrap: pretty;
@@ -322,27 +322,27 @@
   margin-top: 1rem;
 }
 .manifesto__body a {
-  color: var(--gold-on-invert);
+  color: var(--gold);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.22em;
   transition: color 0.25s var(--ease-out);
 }
 .manifesto__body a:hover {
-  color: var(--ice-on-invert);
+  color: var(--ice);
 }
 
 .manifesto__log {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--invert-line);
+  border-top: 1px solid var(--line);
 }
 .log-row {
   display: grid;
   grid-template-columns: 5.2rem minmax(0, 1fr);
   gap: 1rem;
   padding: 0.8rem 0;
-  border-bottom: 1px solid var(--invert-line-soft);
+  border-bottom: 1px solid var(--line-soft);
   font-size: 0.84rem;
 }
 .log-row dt {
@@ -350,16 +350,16 @@
   font-size: 0.56rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--invert-ink-3);
+  color: var(--ink-3);
   padding-top: 0.22rem;
 }
 .log-row dd {
   margin: 0;
-  color: var(--invert-fg);
+  color: var(--ink);
   line-height: 1.65;
 }
 .log-row dd .muted {
-  color: var(--invert-ink-3);
+  color: var(--ink-3);
 }
 .log-row dd .live-dot {
   display: inline-block;
@@ -367,8 +367,8 @@
   height: 6px;
   margin-right: 0.45rem;
   border-radius: 50%;
-  background: var(--gold-on-invert);
-  box-shadow: 0 0 10px var(--gold-on-invert);
+  background: var(--gold);
+  box-shadow: 0 0 10px var(--gold);
   animation: live-pulse 2.4s ease-in-out infinite;
   vertical-align: 0.05em;
 }
@@ -389,7 +389,7 @@
   gap: 1rem;
   margin-top: clamp(2rem, 4vw, 3rem);
   padding-top: clamp(1.4rem, 2.6vw, 2rem);
-  border-top: 1px solid var(--invert-line);
+  border-top: 1px solid var(--line);
 }
 .stat {
   display: flex;
@@ -402,7 +402,7 @@
   font-weight: 400;
   line-height: 1;
   letter-spacing: -0.02em;
-  color: var(--invert-fg);
+  color: var(--ink);
   font-variant-numeric: lining-nums tabular-nums;
   font-feature-settings: 'lnum' 1, 'tnum' 1;
 }
@@ -410,7 +410,7 @@
   font-size: 0.28em;
   font-family: var(--font-mono);
   letter-spacing: 0.1em;
-  color: var(--gold-on-invert);
+  color: var(--gold);
   vertical-align: super;
   margin-left: 0.2em;
 }
@@ -419,7 +419,7 @@
   font-size: 0.56rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--invert-ink-3);
+  color: var(--ink-3);
 }
 
 /* ---------------------------------------------------------------

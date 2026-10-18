@@ -550,9 +550,9 @@ body.menu-open .mobile-menu {
 .marquee {
   position: relative;
   overflow: hidden;
-  background: var(--invert-bg);
-  color: var(--invert-fg);
-  border-block: 1px solid var(--invert-bg);
+  background: var(--bg);
+  color: var(--ink);
+  border-block: 1px solid var(--line-soft);
 }
 .marquee__track {
   display: flex;
@@ -577,7 +577,7 @@ body.menu-open .mobile-menu {
   font-weight: 500;
   letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: var(--invert-fg);
+  color: var(--ink-2);
   white-space: nowrap;
 }
 .marquee__item strong {
@@ -586,15 +586,15 @@ body.menu-open .mobile-menu {
   font-weight: 500;
   letter-spacing: 0.01em;
   text-transform: none;
-  color: var(--invert-fg);
+  color: var(--ink);
 }
 .marquee__item .spark {
   font-size: 0.76rem;
-  color: var(--gold-on-invert);
-  opacity: 0.95;
+  color: var(--gold);
+  opacity: 0.9;
 }
 .marquee__item:nth-child(3n) .spark {
-  color: var(--ice-on-invert);
+  color: var(--ice);
 }
 @keyframes marquee-scroll {
   to {

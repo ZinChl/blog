@@ -208,7 +208,7 @@
   font-weight: 400;
   padding-right: 0.04em;
   margin-left: 0.01em;
-  background: linear-gradient(115deg, var(--gold-deep) 0%, var(--gold-bright) 46%, var(--gold) 100%);
+  background: linear-gradient(115deg, var(--ice-deep) 0%, var(--ice-bright) 46%, var(--ice) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
