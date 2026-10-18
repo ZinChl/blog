@@ -93,7 +93,7 @@ const socialIcon = (icon: string) =>
 
     <header class="site-header" data-site-header>
       <div class="header-inner">
-        <a class="brand" href="/" aria-label={`${SITE.title} · ${SITE.titleEn} · ${SITE.nameCn}，返回首页`}>
+        <a class="brand" href="/">
           <svg class="brand-sigil" viewBox="0 0 40 40" fill="none" aria-hidden="true" focusable="false">
             <circle cx="20" cy="20" r="15.5" stroke="currentColor" stroke-opacity=".4" stroke-width="1"></circle>
             <circle
@@ -119,6 +119,7 @@ const socialIcon = (icon: string) =>
             <strong>{SITE.title}</strong>
             <small>{SITE.titleEn}</small>
           </span>
+          <span class="sr-only">{SITE.nameCn}，返回首页</span>
         </a>
 
         <nav class="site-nav" aria-label="主导航">
