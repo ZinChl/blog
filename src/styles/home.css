@@ -89,9 +89,10 @@
 
 .entry__title {
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.035em;
-  line-height: 1.15;
+  font-weight: 400;
+  font-size: 1.32rem;
+  letter-spacing: -0.01em;
+  line-height: 1.22;
   text-wrap: balance;
   transition: color 0.3s var(--ease-out);
 }
@@ -153,7 +154,10 @@
   color: var(--ice);
 }
 .entry--feature .entry__title {
-  font-size: clamp(2.2rem, 4.8vw, 4rem);
+  font-weight: 300;
+  font-size: clamp(2.8rem, 5.6vw, 4.8rem);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
 }
 .entry--feature:hover .entry__title {
   color: var(--ink);
@@ -287,10 +291,10 @@
 }
 .manifesto__lead {
   font-family: var(--font-display);
-  font-size: clamp(1.7rem, 3.4vw, 3rem);
-  font-weight: 600;
-  line-height: 1.32;
-  letter-spacing: -0.035em;
+  font-size: clamp(1.55rem, 3.3vw, 2.9rem);
+  font-weight: 400;
+  line-height: 1.42;
+  letter-spacing: -0.005em;
   color: var(--invert-fg);
   text-wrap: balance;
 }
@@ -394,10 +398,10 @@
 }
 .stat__value {
   font-family: var(--font-display);
-  font-size: clamp(2.2rem, 4.2vw, 3.4rem);
-  font-weight: 600;
+  font-size: clamp(2.4rem, 4.4vw, 3.7rem);
+  font-weight: 400;
   line-height: 1;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.02em;
   color: var(--invert-fg);
   font-variant-numeric: lining-nums tabular-nums;
   font-feature-settings: 'lnum' 1, 'tnum' 1;
@@ -448,17 +452,18 @@
 .home-cta__title {
   display: flex;
   align-items: baseline;
-  gap: 0.35em;
+  gap: 0.3em;
   font-family: var(--font-display);
-  font-size: clamp(3rem, 9vw, 8rem);
-  font-weight: 600;
-  line-height: 0.92;
-  letter-spacing: -0.055em;
+  font-size: clamp(3.2rem, 9.6vw, 8.6rem);
+  font-weight: 300;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
   transition: color 0.35s var(--ease-out);
 }
 .home-cta__title em {
   font-style: normal;
-  color: var(--ice);
+  font-weight: 400;
+  color: var(--gold);
 }
 .home-cta__link:hover .home-cta__title {
   color: var(--ink);
@@ -535,10 +540,10 @@
     display: none;
   }
   .entry__title {
-    font-size: 1.02rem;
+    font-size: 1.15rem;
   }
   .entry--feature .entry__title {
-    font-size: clamp(1.8rem, 7.2vw, 2.4rem);
+    font-size: clamp(2.2rem, 8.4vw, 2.9rem);
   }
   .entry__desc {
     font-size: 0.86rem;

@@ -188,10 +188,10 @@
   gap: 0;
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(6.4rem, 20.5vw, 17.5rem);
-  line-height: 0.76;
-  letter-spacing: -0.055em;
+  font-weight: 300;
+  font-size: clamp(7rem, 23.5vw, 20rem);
+  line-height: 0.8;
+  letter-spacing: -0.02em;
   color: var(--ink);
   opacity: 0;
   animation: hero-word 1.25s var(--ease-out) 0.18s forwards;
@@ -199,24 +199,19 @@
 .hero-title__solid {
   display: inline-block;
   color: var(--ink);
+  font-weight: 300;
 }
-.hero-title__outline {
+/* 原版的斜体「nc」+ 金色渐变，保持 21nc 的识别度 */
+.hero-title__accent {
   display: inline-block;
-  color: color-mix(in srgb, var(--ice) 4%, transparent);
-  -webkit-text-stroke: clamp(1.5px, 0.15vw, 2.6px)
-    color-mix(in srgb, var(--ice) 78%, var(--ink));
-}
-.hero-title__dot {
-  display: block;
-  align-self: flex-start;
-  width: 0.075em;
-  height: 0.075em;
-  margin-top: 0.15em;
-  margin-left: 0.09em;
-  border-radius: 50%;
-  background: var(--gold);
-  box-shadow: 0 0 14px var(--gold);
-  flex: none;
+  font-style: italic;
+  font-weight: 400;
+  padding-right: 0.04em;
+  margin-left: 0.01em;
+  background: linear-gradient(115deg, var(--gold-deep) 0%, var(--gold-bright) 46%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .hero-orbit {
@@ -318,9 +313,9 @@
 }
 .hero-tagline__cn {
   font-family: var(--font-display);
-  font-size: clamp(1.3rem, 2.3vw, 1.9rem);
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-size: clamp(1.45rem, 2.6vw, 2.15rem);
+  font-weight: 400;
+  letter-spacing: 0.1em;
   color: var(--ink);
 }
 .hero-tagline__en {
@@ -450,7 +445,7 @@
 
 @media (max-width: 1024px) {
   .hero-title {
-    font-size: clamp(5.8rem, 20vw, 12rem);
+    font-size: clamp(6.2rem, 23vw, 13.6rem);
   }
   .hero-bottom {
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
@@ -481,7 +476,7 @@
     padding-block: clamp(2.2rem, 9vh, 4rem);
   }
   .hero-title {
-    font-size: clamp(5rem, 25vw, 9.5rem);
+    font-size: clamp(6.2rem, 34vw, 13rem);
   }
   .hero-orbit {
     width: 150vw;
@@ -512,11 +507,11 @@
 
 @media (max-width: 520px) {
   .hero-title {
-    font-size: clamp(4.6rem, 24vw, 7rem);
+    font-size: clamp(5.4rem, 42vw, 10rem);
   }
   .hero-tagline__cn {
-    font-size: 1.15rem;
-    letter-spacing: 0.1em;
+    font-size: 1.22rem;
+    letter-spacing: 0.08em;
   }
   .hero-desc {
     font-size: 0.84rem;

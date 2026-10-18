@@ -95,21 +95,22 @@ npm run preview   # 预览构建结果
 ## 前端设计（2026.10 重做）
 
 整站视觉是「**21NC · SIGNAL**」：**纯黑画布 + 黑白主色**，只保留两个信号色 ——
-暖金 `#E6B45F` 与冰蓝 `#9FE6FF`。Space Grotesk 巨字标 + JetBrains Mono 元信息 +
-系统中文无衬线；直角、发丝线、目录式索引、反色白带。深色为默认，右上角可切到纯白浅色主题。
+暖金 `#E6B45F` 与冰蓝 `#9FE6FF`。Cormorant Garamond 巨字标（「21」直立、「nc」斜体描金）+
+JetBrains Mono 元信息 + 系统中文衬线标题 / 无衬线正文；直角、发丝线、目录式索引、反色白带。
+深色为默认，右上角可切到纯白浅色主题。
 
 - **设计令牌**：`src/styles/tokens.css`（颜色、字体、间距、缓动都在这里；改主题只动这一个文件）
 - **样式分层**：`site.css`（页头页脚/反色跑马灯/转场）、`hero.css`（纯黑首屏 + 轨道字标）、
   `home.css`（目录式索引 / 反色自述区 / 档案入口）、`pages.css`（列表页/文章页/关于/404/留言）
-- **字体**：西文自托管 Space Grotesk（展示）与 JetBrains Mono（元信息），文件在 `public/fonts/`；
-  中文使用系统无衬线回退，不额外下载中文字体
+- **字体**：西文自托管 Cormorant Garamond（展示，含真斜体）与 JetBrains Mono（元信息），
+  文件在 `public/fonts/`；中文标题走系统衬线（Songti SC / 宋体 / Noto Serif SC），正文走系统无衬线，不额外下载中文字体
 - **动效**：`src/scripts/motion.ts`（滚动显现、Lenis 平滑滚动、实时时钟、磁吸按钮、滚动进度），
   `components/Starfield.astro`（手写 WebGL 星场，已调成黑白星点 + 极少量金/冰蓝信号，
   `prefers-reduced-motion` / 低性能自动降级）、`components/Cursor.astro`（桌面端自定义光标，
   按钮悬停时粒子散开 / 聚合）
 - **装饰图形**：关于页的内联「信号调谐盘」、`components/StarChart.astro`
   （按文章标题生成的确定性星图）、`components/Starfield.astro` 星场，全部为 SVG / WebGL，无位图依赖
-- **首屏**：纯黑底 + 巨大「21 / 空心 NC」字标 + 十字轨道线 + 一颗金点、一颗冰蓝点，没有任何位图
+- **首屏**：纯黑底 + 巨大「21 + 斜体 nc（金渐变）」字标 + 十字轨道线 + 一颗金点、一颗冰蓝点，没有任何位图
 - **主题预览**：任意页面加 `?theme=light` 或 `?theme=dark`；浅色是纯白纸面 + 黑字，
   反色章节与跑马灯会在黑白之间互换
 - **可访问性**：键盘焦点可见、`prefers-reduced-motion` 全量降级、无 JS 时内容完整可见
@@ -127,7 +128,7 @@ npm run preview   # 预览构建结果
 │   ├── host.json
 │   └── package.json
 ├── public/
-│   ├── fonts/                  # 自托管西文字体（Space Grotesk / JetBrains Mono）
+│   ├── fonts/                  # 自托管西文字体（Cormorant Garamond / JetBrains Mono）
 │   ├── images/                 # 文章配图
 │   ├── favicon.svg             # 黑白信号标（金 / 冰蓝点）
 │   ├── og.jpg                  # 社交分享卡片（1200×630）

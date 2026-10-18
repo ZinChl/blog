@@ -137,10 +137,10 @@
 }
 .brand-name strong {
   font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-weight: 600;
-  letter-spacing: -0.04em;
-  text-transform: uppercase;
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 0.95;
 }
 .brand-name small {
   font-family: var(--font-mono);
@@ -400,18 +400,16 @@ body.menu-open .mobile-menu {
 .footer-brand .footer-wordmark {
   display: inline-block;
   font-family: var(--font-display);
-  font-size: clamp(3rem, 7vw, 5.6rem);
-  font-weight: 600;
-  line-height: 0.86;
-  letter-spacing: -0.05em;
-  text-transform: uppercase;
-  color: transparent;
-  -webkit-text-stroke: 1.2px color-mix(in srgb, var(--ink) 84%, transparent);
+  font-size: clamp(3.4rem, 7.6vw, 6.4rem);
+  font-weight: 300;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: var(--ink);
   margin-bottom: 0.9rem;
-  transition: -webkit-text-stroke-color 0.4s var(--ease-out), color 0.4s var(--ease-out);
+  transition: color 0.4s var(--ease-out);
 }
 .footer-brand:hover .footer-wordmark {
-  -webkit-text-stroke-color: var(--ice);
+  color: var(--gold);
 }
 .footer-brand p {
   max-width: 26rem;
@@ -584,9 +582,9 @@ body.menu-open .mobile-menu {
 }
 .marquee__item strong {
   font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-size: 1.08rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   text-transform: none;
   color: var(--invert-fg);
 }
@@ -627,15 +625,16 @@ body.menu-open .mobile-menu {
 }
 .section-head h2 {
   font-family: var(--font-display);
-  font-size: clamp(1.9rem, 4vw, 3.2rem);
-  font-weight: 600;
-  line-height: 1.02;
-  letter-spacing: -0.045em;
+  font-size: clamp(2.2rem, 4.6vw, 3.7rem);
+  font-weight: 400;
+  line-height: 1.06;
+  letter-spacing: -0.015em;
   text-wrap: balance;
 }
 .section-head h2 em {
   font-style: normal;
-  color: var(--ice);
+  font-weight: 500;
+  color: var(--gold);
 }
 .section-head .section-kicker {
   font-family: var(--font-mono);
@@ -667,7 +666,7 @@ body.menu-open .mobile-menu {
   color: var(--gold-on-invert);
 }
 .section--invert .index-num {
-  -webkit-text-stroke-color: color-mix(in srgb, var(--invert-fg) 55%, transparent);
+  color: color-mix(in srgb, var(--invert-fg) 42%, transparent);
 }
 .section--invert .link-underline {
   color: var(--invert-ink-2);

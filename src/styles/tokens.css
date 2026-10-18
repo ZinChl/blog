@@ -5,13 +5,20 @@
    ========================================================================== */
 
 /* ---------------------------------------------------------------
-   自托管字体：Space Grotesk（展示 + 西文） / JetBrains Mono（元信息）
+   自托管字体：Cormorant Garamond（展示，含真斜体） / JetBrains Mono（元信息）
    --------------------------------------------------------------- */
 @font-face {
-  font-family: 'Space Grotesk';
-  src: url('/fonts/space-grotesk-latin.woff2') format('woff2');
+  font-family: 'Cormorant Garamond';
+  src: url('/fonts/cormorant-garamond-latin.woff2') format('woff2');
   font-weight: 300 700;
   font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('/fonts/cormorant-garamond-latin-italic.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: italic;
   font-display: swap;
 }
 @font-face {
@@ -66,11 +73,12 @@
   --gold-on-invert: #8a5a00;
   --ice-on-invert: #006e8f;
 
-  --font-display: 'Space Grotesk', 'Noto Sans SC', 'Source Han Sans SC',
-    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue',
-    Arial, sans-serif;
-  --font-sans: var(--font-display);
+  --font-display: 'Cormorant Garamond', 'Noto Serif SC', 'Source Han Serif SC',
+    'Songti SC', STSong, SimSun, Georgia, serif;
   --font-serif: var(--font-display);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei',
+    'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo,
     Consolas, 'Liberation Mono', monospace;
 
@@ -300,14 +308,14 @@ ol {
    --------------------------------------------------------------- */
 .display {
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-weight: 400;
+  letter-spacing: -0.02em;
 }
 
 .serif {
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-weight: 400;
+  letter-spacing: -0.02em;
 }
 
 .italic {
@@ -359,12 +367,11 @@ ol {
 /* 章节编号：01 — 02 …（空心白字） */
 .index-num {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(2.4rem, 4.4vw, 4rem);
+  font-weight: 300;
+  font-size: clamp(2.6rem, 4.8vw, 4.2rem);
   line-height: 0.8;
-  color: transparent;
-  -webkit-text-stroke: 1px color-mix(in srgb, var(--ink) 55%, transparent);
-  letter-spacing: -0.04em;
+  color: color-mix(in srgb, var(--ink) 40%, transparent);
+  letter-spacing: -0.02em;
   user-select: none;
 }
 
