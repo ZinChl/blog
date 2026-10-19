@@ -95,7 +95,7 @@ npm run preview   # 预览构建结果
 ## 前端设计（2026.10 重做）
 
 整站视觉是「**21NC · SIGNAL**」：**纯黑画布 + 黑白主色**，只保留两个信号色 ——
-冰蓝 `#9FE6FF` 为主、暖金 `#E6B45F` 只做极少量点缀。Cormorant Garamond 巨字标（「21」直立、「nc」斜体描金）+
+冰蓝 `#9FE6FF` 为主、暖金 `#E6B45F` 只做极少量点缀。Cormorant Garamond 巨字标（「21」直立、「nc」斜体描冰蓝）+
 JetBrains Mono 元信息 + 系统中文衬线标题 / 无衬线正文；直角、发丝线、目录式索引、细线分隔的跑马灯。首页始终保持单一底色，
 深色为默认，右上角可切到纯白浅色主题。
 
@@ -107,10 +107,18 @@ JetBrains Mono 元信息 + 系统中文衬线标题 / 无衬线正文；直角�
 - **动效**：`src/scripts/motion.ts`（滚动显现、Lenis 平滑滚动、实时时钟、磁吸按钮、滚动进度），
   `components/Starfield.astro`（手写 WebGL 星场，已调成黑白星点 + 极少量金/冰蓝信号，
   `prefers-reduced-motion` / 低性能自动降级）、`components/Cursor.astro`（桌面端自定义光标，
-  按钮悬停时粒子散开 / 聚合）
+  按钮悬停时粒子散开 / 聚合）、`components/BlackHole.astro`（首屏黑洞：WebGL2 引力透镜着色器，
+  吸积盘 + 轨道粒子，见下）
 - **装饰图形**：关于页的内联「信号调谐盘」、`components/StarChart.astro`
   （按文章标题生成的确定性星图）、`components/Starfield.astro` 星场，全部为 SVG / WebGL，无位图依赖
-- **首屏**：纯黑底 + 巨大「21 + 斜体 nc（金渐变）」字标 + 十字轨道线 + 一颗金点、一颗冰蓝点，没有任何位图
+- **首屏**：纯黑底 + 巨大「21 + 斜体 nc（冰渐变）」字标，字标背后有一颗实时渲染的**黑洞**：
+  WebGL2 片元着色器对史瓦西测地线做步进积分（引力透镜）、赤道面吸积盘的相对论多普勒增亮
+  （迎向侧冰蓝、远离侧少量暖金）+ 被透镜压缩的星空 + 加法混合的轨道尘埃粒子。
+  鼠标移动会让相机绕黑洞轻微公转、指针贴近时盘面转得更快，点击触发一次耀发。
+  能力分档：按 `WEBGL_debug_renderer_info` / `deviceMemory` / `hardwareConcurrency` 选高/中/低画质
+  （软件渲染、Save-Data、低配直接不用），运行中统计帧时间继续降分辨率与积分步数，
+  压到最低仍掉帧则回退原轨道 SVG；`prefers-reduced-motion` 只渲染一帧静态画面；
+  浅色主题下保留轨道 SVG（黑洞作为深空效果只在深色主题启用）
 - **主题预览**：任意页面加 `?theme=light` 或 `?theme=dark`；浅色是纯白纸面 + 黑字。
   首页始终是单一底色，只有内页个别模块（如文章作者卡）用反色块
 - **可访问性**：键盘焦点可见、`prefers-reduced-motion` 全量降级、无 JS 时内容完整可见
