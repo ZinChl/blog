@@ -267,8 +267,8 @@
   z-index: 1;
   left: 50%;
   top: 50%;
-  width: min(88vw, 1320px);
-  height: min(74vh, 720px);
+  width: min(84vw, 1200px);
+  height: min(70vh, 650px);
   transform: translate(-50%, -50%);
   pointer-events: none;
   opacity: 0;
@@ -290,9 +290,9 @@
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
-    ellipse 46% 38% at 50% 47%,
-    rgba(0, 0, 0, 0.46),
-    rgba(0, 0, 0, 0.18) 48%,
+    ellipse 50% 41% at 50% 47%,
+    rgba(0, 0, 0, 0.48),
+    rgba(0, 0, 0, 0.19) 48%,
     transparent 74%
   );
 }
@@ -310,8 +310,8 @@
   top: 22%;
 }
 .hero-bh__label--left {
-  left: 14%;
-  bottom: 22%;
+  left: 11%;
+  bottom: 8%;
 }
 /* 着色器就绪后淡出旧轨道；不支持的浏览器保持原样 */
 .hero.is-bh .hero-orbit {
@@ -320,7 +320,7 @@
 }
 /* 黑洞亮起来以后，字标和副题需要一层暗影才压得住 */
 .hero.is-bh .hero-title {
-  filter: drop-shadow(0 10px 42px rgba(0, 0, 0, 0.55));
+  filter: drop-shadow(0 10px 46px rgba(0, 0, 0, 0.72));
 }
 .hero.is-bh .hero-top {
   text-shadow: 0 1px 14px rgba(0, 0, 0, 0.9), 0 0 34px rgba(0, 0, 0, 0.65);
@@ -332,7 +332,7 @@
   text-shadow: 0 2px 18px rgba(0, 0, 0, 0.85);
 }
 .hero.is-bh .hero-tagline__en {
-  color: color-mix(in srgb, var(--ink) 84%, transparent);
+  color: color-mix(in srgb, var(--ink) 90%, transparent);
 }
 /* 浅色主题：黑洞不启用，轨道保持可见 */
 :root[data-theme='light'] .hero-bh {
