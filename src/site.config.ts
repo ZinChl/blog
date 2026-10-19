@@ -5,7 +5,7 @@ export const SITE = {
   /** 浏览器标签页和品牌处显示的名字 */
   title: '21nc',
   /** 英文副标题 / 站点概念名 */
-  titleEn: 'THE ASTRAL ARCHIVE',
+  titleEn: 'HIDDEN DIMENSION',
   /** 中文站名 */
   nameCn: '星海档案',
   /** 一句话简介 */
@@ -34,11 +34,11 @@ export const SITE = {
 
   /** 首页 hero 文案 */
   hero: {
-    eyebrow: 'THE ASTRAL ARCHIVE',
+    eyebrow: 'HIDDEN DIMENSION',
     year: 'EST. 2026',
-    subtitleEn: 'The Astral Archive',
+    subtitleEn: 'Hidden Dimension',
     description:
-      '在代码与群星之间，收集一些想法、笔记，以及偶尔冒出来的微光。这里没有宏大的叙事，只有一个人认真生活过的痕迹。',
+      '收集一些想法、笔记，以及偶尔冒出来的微光。这里没有宏大的叙事，只有一个人认真生活过的痕迹。',
     primaryCta: '翻开最近的文章',
   },
 

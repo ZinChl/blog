@@ -439,7 +439,7 @@ html.filter-ready .archive-filter {
 
 .archive-list {
   list-style: none;
-  margin: 0;
+  margin: 0 calc(var(--pg-row-pad) * -1);
   padding: 0;
   border-top: 1px solid var(--line-soft);
 }
@@ -467,7 +467,7 @@ html.filter-ready .archive-filter {
   gap: clamp(0.7rem, 1.6vw, 1.3rem) clamp(1.1rem, 3vw, 2.6rem);
   min-height: 0;
   overflow: hidden;
-  margin-inline: calc(var(--pg-row-pad) * -1);
+  margin-inline: 0;
   padding: clamp(1.35rem, 2.6vw, 1.9rem) var(--pg-row-pad);
   color: inherit;
   background: transparent;
@@ -476,11 +476,12 @@ html.filter-ready .archive-filter {
     color 0.3s var(--ease-out);
 }
 
-/* 目录行 hover：整行反色（深色主题白底黑字 / 浅色主题黑底白字） */
+/* 目录行 hover：不再整行反白 —— 只在原地浮起一块冷色面板，用圆角收掉生硬的边 */
 @media (hover: hover) {
   .archive-item:hover .archive-item__link {
-    background: var(--invert-bg);
-    color: var(--invert-fg);
+    background: color-mix(in srgb, var(--ice) 7%, var(--surface-2));
+    border-radius: 18px;
+    box-shadow: inset 0 0 0 1px var(--line-soft);
   }
 }
 
@@ -512,11 +513,11 @@ html.filter-ready .archive-filter {
 
 @media (hover: hover) {
   .archive-item:hover .archive-item__day {
-    color: var(--invert-fg);
+    color: var(--ink);
   }
 
   .archive-item:hover .archive-item__no {
-    color: var(--ice-on-invert);
+    color: var(--ice);
   }
 }
 
@@ -540,24 +541,12 @@ html.filter-ready .archive-filter {
   transition: color 0.3s var(--ease-out);
 }
 
-@media (hover: hover) {
-  .archive-item:hover .archive-item__title {
-    color: var(--invert-fg);
-  }
-}
-
 .archive-item__desc {
   max-width: 52ch;
   color: var(--ink-2);
   font-size: 0.89rem;
   line-height: 1.85;
   transition: color 0.3s var(--ease-out);
-}
-
-@media (hover: hover) {
-  .archive-item:hover .archive-item__desc {
-    color: var(--invert-ink-2);
-  }
 }
 
 .archive-item__meta {
@@ -578,14 +567,7 @@ html.filter-ready .archive-filter {
 
 @media (hover: hover) {
   .archive-item:hover .archive-item__read {
-    color: var(--invert-ink-3);
-  }
-
-  /* 行反色时标签跟随反色变量，避免白底上看不清 */
-  .archive-item:hover .tag-pill {
-    border-color: var(--invert-line);
-    color: var(--invert-ink-2);
-    background: transparent;
+    color: var(--ink-2);
   }
 }
 
@@ -613,9 +595,9 @@ html.filter-ready .archive-filter {
 @media (hover: hover) {
   .archive-item:hover .archive-item__arrow {
     transform: translate(3px, -3px);
-    border-color: var(--invert-line);
-    color: var(--ice-on-invert);
-    background: transparent;
+    border-color: color-mix(in srgb, var(--ice) 55%, transparent);
+    color: var(--ice);
+    background: color-mix(in srgb, var(--ice) 9%, transparent);
   }
 }
 

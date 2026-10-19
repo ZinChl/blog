@@ -311,12 +311,38 @@
   opacity: 0;
   animation: hero-fade 1s var(--ease-out) 0.85s forwards;
 }
-.hero-tagline__cn {
-  font-family: var(--font-display);
-  font-size: clamp(1.45rem, 2.6vw, 2.15rem);
+.hero-tagline__cmd {
+  display: inline-flex;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-size: clamp(1.05rem, 1.9vw, 1.52rem);
   font-weight: 400;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.045em;
   color: var(--ink);
+  white-space: nowrap;
+}
+.hero-tagline__prompt {
+  color: var(--ice);
+  font-weight: 500;
+}
+.hero-tagline__caret {
+  display: inline-block;
+  width: 0.5em;
+  height: 1.06em;
+  margin-left: 0.16em;
+  background: var(--ice);
+  transform: translateY(0.13em);
+  animation: hero-caret 1.15s steps(1, end) infinite;
+}
+@keyframes hero-caret {
+  0%,
+  46% {
+    opacity: 0.85;
+  }
+  47%,
+  100% {
+    opacity: 0;
+  }
 }
 .hero-tagline__en {
   font-size: 0.6rem;
@@ -509,9 +535,9 @@
   .hero-title {
     font-size: clamp(5.4rem, 42vw, 10rem);
   }
-  .hero-tagline__cn {
-    font-size: 1.22rem;
-    letter-spacing: 0.08em;
+  .hero-tagline__cmd {
+    font-size: 0.94rem;
+    letter-spacing: 0.03em;
   }
   .hero-desc {
     font-size: 0.84rem;
@@ -549,5 +575,9 @@
   .hero-orbit .orbit-line--a,
   .hero-orbit .orbit-line--axis {
     stroke-dashoffset: 0;
+  }
+  .hero-tagline__caret {
+    animation: none;
+    opacity: 0.85;
   }
 }

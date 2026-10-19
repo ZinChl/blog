@@ -23,7 +23,7 @@ const marqueeItems = [
   SITE.nameCn,
   'SIGNAL 001',
   'KNOWLEDGE · CURIOSITY · INFINITY',
-  '在代码与群星之间',
+  '>world.execute(me)',
   'UESTC · CHENGDU',
   `EST. ${SITE.since}`,
 ];
@@ -41,7 +41,13 @@ const marqueeItems = [
             {marqueeItems.map((item) => (
               <span class="marquee__item">
                 <span class="spark">✦</span>
-                {item.includes('·') || item === SITE.titleEn ? <strong>{item}</strong> : item}
+                {item.includes('·') || item === SITE.titleEn ? (
+                  <strong>{item}</strong>
+                ) : item.startsWith('>') ? (
+                  <span class="marquee__item--code">{item}</span>
+                ) : (
+                  item
+                )}
               </span>
             ))}
           </div>
