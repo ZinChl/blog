@@ -591,8 +591,8 @@
     width: 150vw;
   }
   .hero-bh {
-    width: min(180vw, 1000px);
-    height: min(54vh, 460px);
+    width: min(150vw, 880px);
+    height: min(38vh, 380px);
   }
   .hero-bh__label {
     display: none;
@@ -628,6 +628,10 @@
 @media (max-width: 520px) {
   .hero-title {
     font-size: clamp(5.4rem, 42vw, 10rem);
+  }
+  .hero-bh {
+    width: min(132vw, 720px);
+    height: min(31vh, 285px);
   }
   .hero-tagline__cmd {
     font-size: 0.94rem;
