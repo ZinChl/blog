@@ -7,7 +7,7 @@ export const SITE = {
   /** 英文副标题 / 站点概念名 */
   titleEn: 'HIDDEN DIMENSION',
   /** 中文站名 */
-  nameCn: '星海档案',
+  nameCn: '隐藏维度',
   /** 一句话简介 */
   tagline: 'UESTC student · 写代码，看星星，记点东西',
   /** 用于 SEO 描述和 RSS */
@@ -25,7 +25,7 @@ export const SITE = {
   /** 城市（正文/署名等短场景用） */
   city: '成都',
   /** 英文/等宽场景用的短地名 */
-  locationEn: 'UESTC · CHENGDU',
+  locationEn: 'UESTC',
   coords: '30.75°N / 103.94°E',
   /** 页脚时钟时区（成都，UTC+8） */
   timeZone: 'Asia/Shanghai',
@@ -38,12 +38,12 @@ export const SITE = {
     year: 'EST. 2026',
     subtitleEn: 'Hidden Dimension',
     description:
-      '收集一些想法、笔记，以及偶尔冒出来的微光。这里没有宏大的叙事，只有一个人认真生活过的痕迹。',
+      '隐藏维度',
     primaryCta: '翻开最近的文章',
   },
 
   /** 页脚的一句话 */
-  footerLine: '一本写给群星与未知的私人札记，也是通往更远处的一张星图。',
+  footerLine: 'Im gonna give you my golden star dust, in the land where my dreams come true',
   footerLatin: 'A quiet archive beyond the gate of stars.',
 
   /** 顶部导航 */
