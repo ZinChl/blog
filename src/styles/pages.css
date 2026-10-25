@@ -2647,6 +2647,7 @@ html.filter-ready .archive-filter {
 .comments {
   --danger: #ff9d9d;
   --ok: #8fe3b0;
+  scroll-margin-top: calc(var(--header-h) + 24px);
   margin-top: clamp(2.8rem, 6vw, 4.4rem);
   padding-top: clamp(1.7rem, 3vw, 2.3rem);
   border-top: 1px solid var(--line-soft);
@@ -2699,6 +2700,30 @@ html.filter-ready .archive-filter {
   color: var(--pg-label);
 }
 
+/* 头部右侧：提示 + 去留言墙的入口 */
+.comments__aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.45rem;
+  text-align: right;
+}
+
+.comments__wall-link {
+  font-size: 0.56rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ice);
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s var(--ease-out);
+}
+
+.comments__wall-link:hover {
+  border-color: color-mix(in srgb, var(--ice) 60%, transparent);
+}
+
 .comments__list {
   display: flex;
   flex-direction: column;
@@ -2724,6 +2749,7 @@ html.filter-ready .archive-filter {
 
 /* 留言卡片：硬边 + 发丝线，hover 只提亮边框 */
 .comment {
+  scroll-margin-top: calc(var(--header-h) + 96px);
   padding: clamp(0.95rem, 2vw, 1.2rem) clamp(1rem, 2.2vw, 1.3rem);
   border: 1px solid var(--line-soft);
   border-radius: 0;
@@ -2733,6 +2759,33 @@ html.filter-ready .archive-filter {
 
 .comment:hover {
   border-color: var(--line);
+}
+
+/* 从留言墙跳进来时，标出目标留言 */
+.comment.is-target,
+.comment:target {
+  border-color: color-mix(in srgb, var(--ice) 45%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ice) 16%, transparent);
+  animation: comment-target-flash 2.8s var(--ease-out) 1;
+}
+
+/* 目标留言会由滚动定位自动聚焦，样式上已经用冰蓝描边提示，不再叠加 focus 外框 */
+.comment.is-target:focus,
+.comment.is-target:focus-visible,
+.comment:target:focus {
+  outline: none;
+}
+
+@keyframes comment-target-flash {
+  0% {
+    background: color-mix(in srgb, var(--ice) 12%, transparent);
+  }
+  60% {
+    background: color-mix(in srgb, var(--ice) 5%, transparent);
+  }
+  100% {
+    background: transparent;
+  }
 }
 
 .comment-head {

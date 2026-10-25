@@ -1,0 +1,559 @@
+/* ==========================================================================
+   10. 留言墙 /wall/
+   --------------------------------------------------------------------------
+   把每篇文章的留言按时间收拢到一面墙上。
+   视觉沿用「档案库」的题头语言：星云光晕 + 坐标网格 + 大号衬线题 + 冰蓝强调；
+   墙面本身是硬边卡片网格，序号、时间、文章出处在等宽小字里。
+   ========================================================================== */
+
+.wall {
+  --wall-danger: #ff9d9d;
+  position: relative;
+  padding-bottom: clamp(4rem, 9vw, 7rem);
+  background: var(--bg);
+}
+
+:root[data-theme='light'] .wall {
+  --wall-danger: #b42318;
+}
+
+/* ---------------------------------------------------------------
+   题头
+   --------------------------------------------------------------- */
+.wall-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(3.6rem, 9vh, 6.2rem) 0 clamp(2.2rem, 4.6vw, 3.4rem);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.wall-hero__inner {
+  position: relative;
+  z-index: 2;
+}
+
+.wall-hero__glow {
+  position: absolute;
+  z-index: 0;
+  top: -30%;
+  right: -16%;
+  width: min(58vw, 780px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--glow-ice), transparent 66%);
+  filter: blur(24px);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.wall-hero__grid {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(90deg, color-mix(in srgb, var(--ink) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(0deg, color-mix(in srgb, var(--ink) 6%, transparent) 1px, transparent 1px);
+  background-size: 96px 96px;
+  mask-image: radial-gradient(ellipse 84% 108% at 100% 0%, #000 0%, transparent 72%);
+  -webkit-mask-image: radial-gradient(ellipse 84% 108% at 100% 0%, #000 0%, transparent 72%);
+  opacity: 0.55;
+}
+
+.wall-hero__sigil {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  right: clamp(1rem, 5vw, 5.5rem);
+  width: min(26vw, 300px);
+  aspect-ratio: 1;
+  translate: 0 -50%;
+  color: var(--ink);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.wall-hero__sigil svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.wall-hero__sigil .wall-sigil__dash {
+  stroke: var(--ice);
+  stroke-opacity: 0.36;
+}
+
+.wall-hero__sigil .wall-sigil__ice {
+  fill: var(--ice);
+}
+
+.wall-hero__sigil .wall-sigil__gold {
+  fill: var(--gold);
+  opacity: 0.8;
+}
+
+:root[data-theme='light'] .wall-hero__sigil {
+  opacity: 0.28;
+}
+
+.wall-hero__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+}
+
+.wall-hero__vol {
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pg-label);
+}
+
+.wall-hero__title {
+  display: block;
+  margin-top: clamp(1.1rem, 2.4vw, 1.8rem);
+  font-family: var(--font-display);
+  font-size: clamp(3.2rem, 7.2vw, 6rem);
+  font-weight: 300;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.wall-hero__title em {
+  font-style: normal;
+  font-weight: 400;
+  color: transparent;
+  background: linear-gradient(115deg, var(--ice-deep) 0%, var(--ice-bright) 48%, var(--ice) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  padding-right: 0.04em;
+}
+
+.wall-hero__latin {
+  display: block;
+  margin-top: clamp(0.9rem, 1.8vw, 1.4rem);
+  font-family: var(--font-mono);
+  font-size: clamp(0.58rem, 0.9vw, 0.68rem);
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--pg-label);
+}
+
+.wall-hero__latin::before {
+  content: '';
+  display: inline-block;
+  width: clamp(24px, 3.4vw, 46px);
+  height: 1px;
+  margin-right: 0.9rem;
+  vertical-align: 0.32em;
+  background: var(--line-strong);
+}
+
+.wall-hero__bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem clamp(2rem, 5vw, 5rem);
+  margin-top: clamp(1.7rem, 3.6vw, 2.8rem);
+  padding-top: clamp(1.3rem, 2.8vw, 2rem);
+  border-top: 1px solid var(--line-soft);
+}
+
+.wall-hero__intro {
+  max-width: 40rem;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.95rem;
+  line-height: 2;
+  text-wrap: pretty;
+}
+
+.wall-hero__stats {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: clamp(1.2rem, 2.6vw, 2.4rem);
+  margin: 0;
+}
+
+.wall-stat dt {
+  font-family: var(--font-mono);
+  font-size: 0.54rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--pg-label);
+}
+
+.wall-stat dd {
+  margin: 0.42rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.5vw, 2.1rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.wall-stat dd > span:last-child:not(:first-child) {
+  margin-left: 0.28rem;
+  font-family: var(--font-sans);
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--pg-label);
+}
+
+.wall-stat--date {
+  font-family: var(--font-mono) !important;
+  font-size: 1rem !important;
+  letter-spacing: -0.02em !important;
+  color: var(--ink-2) !important;
+  padding-top: 0.35rem;
+}
+
+/* ---------------------------------------------------------------
+   墙面
+   --------------------------------------------------------------- */
+.wall-body {
+  position: relative;
+}
+
+.wall-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.8rem 2rem;
+  margin-top: clamp(1.4rem, 3vw, 2.2rem);
+  padding-block: 0.8rem;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.wall-bar__status {
+  margin: 0;
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pg-label);
+}
+
+.wall-refresh {
+  padding: 0.36rem 0.7rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 0;
+  background: transparent;
+  color: var(--pg-label);
+  font-family: var(--font-mono);
+  font-size: 0.54rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    color 0.3s var(--ease-out),
+    border-color 0.3s var(--ease-out);
+}
+
+.wall-refresh:hover {
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+
+.wall-refresh[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.wall-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.9rem, 1.6vw, 1.3rem);
+  margin-top: clamp(1.1rem, 2.4vw, 1.8rem);
+}
+
+/* 加载时先占住高度，避免卡片突然出现把页脚往下推（CLS） */
+.wall-grid.is-loading {
+  min-height: clamp(18rem, 38vh, 30rem);
+}
+
+/* 卡片：硬边 + 发丝线，hover 时亮起冰蓝短线与箭头 */
+.wall-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-height: 7.4rem;
+  padding: clamp(1.05rem, 1.8vw, 1.35rem) clamp(1.05rem, 1.9vw, 1.45rem) clamp(0.95rem, 1.7vw, 1.2rem);
+  border: 1px solid var(--line-soft);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--ink) 2.2%, transparent);
+  color: inherit;
+  text-decoration: none;
+  overflow: hidden;
+  transition:
+    border-color 0.3s var(--ease-out),
+    background 0.3s var(--ease-out),
+    transform 0.35s var(--ease-out);
+}
+
+.wall-card:hover {
+  border-color: color-mix(in srgb, var(--ice) 42%, transparent);
+  background: color-mix(in srgb, var(--ink) 3.6%, transparent);
+  transform: translateY(-3px);
+}
+
+.wall-card::after {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: -1px;
+  width: 2.2rem;
+  height: 1px;
+  background: var(--ice);
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-out);
+}
+
+.wall-card:hover::after,
+.wall-card:focus-visible::after {
+  opacity: 0.9;
+}
+
+.wall-card__no {
+  position: absolute;
+  top: 0.95rem;
+  right: clamp(1rem, 1.8vw, 1.3rem);
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  /* 比普通弱化文字亮一点，保证小字号也有足够对比度 */
+  color: color-mix(in srgb, var(--ink) 62%, transparent);
+}
+
+.wall-card__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding-right: 2.5rem;
+}
+
+.wall-card__name {
+  font-family: var(--font-display);
+  font-size: 1.06rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.wall-card__name::before {
+  content: '✦';
+  margin-right: 0.45em;
+  font-size: 0.46em;
+  color: var(--ice);
+  vertical-align: 0.45em;
+  opacity: 0.9;
+}
+
+.wall-card__time {
+  margin-left: auto;
+  font-size: 0.54rem;
+  letter-spacing: 0.1em;
+  color: var(--pg-label);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.wall-card__body {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--pg-body);
+  font-size: 0.92rem;
+  line-height: 1.9;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 9;
+  line-clamp: 9;
+}
+
+.wall-card__foot {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: auto;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--line-soft);
+}
+
+.wall-card__src {
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  color: var(--pg-label);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.3s var(--ease-out);
+}
+
+.wall-card:hover .wall-card__src {
+  color: var(--ice);
+}
+
+.wall-card__arrow {
+  margin-left: auto;
+  font-size: 0.8rem;
+  line-height: 1;
+  color: var(--ink-3);
+  transition:
+    color 0.3s var(--ease-out),
+    transform 0.35s var(--ease-out);
+}
+
+.wall-card:hover .wall-card__arrow {
+  color: var(--ice);
+  transform: translate(3px, -3px);
+}
+
+/* 入场：只做透明度与位移，不覆盖 hover 的 transform */
+@media (prefers-reduced-motion: no-preference) {
+  .wall-card {
+    animation: wall-card-in 0.6s var(--ease-out) backwards;
+    animation-delay: calc(var(--i, 0) * 40ms);
+  }
+}
+
+@keyframes wall-card-in {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* ---------------------------------------------------------------
+   状态：空 / 错误 / 提示
+   --------------------------------------------------------------- */
+.wall-noscript {
+  margin: 1.2rem 0 0;
+  padding: 1rem 1.2rem;
+  border: 1px dashed var(--line-soft);
+  color: var(--ink-2);
+  font-size: 0.88rem;
+  line-height: 1.9;
+}
+
+.wall-note {
+  margin: 1.2rem 0 0;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pg-label);
+}
+
+.wall-empty,
+.wall-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem 1rem;
+  margin-top: clamp(1.4rem, 3vw, 2rem);
+  padding: clamp(2.2rem, 4.6vw, 3.2rem) 1rem;
+  border: 1px dashed var(--line-soft);
+  color: var(--ink-2);
+  text-align: center;
+}
+
+.wall-empty p,
+.wall-error p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.8;
+}
+
+.wall-empty__mark {
+  width: 100%;
+  font-size: 0.8rem;
+  color: var(--ice);
+}
+
+.wall-error__text {
+  color: var(--wall-danger);
+  font-size: 0.88rem;
+}
+
+/* ---------------------------------------------------------------
+   页脚
+   --------------------------------------------------------------- */
+.wall-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.2rem 2rem;
+  margin-top: clamp(3rem, 6vw, 4.6rem);
+  padding-top: clamp(1.6rem, 3vw, 2.2rem);
+  border-top: 1px solid var(--line-soft);
+}
+
+.wall-foot__line {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.88rem;
+  line-height: 1.8;
+}
+
+/* ---------------------------------------------------------------
+   响应式
+   --------------------------------------------------------------- */
+@media (max-width: 1080px) {
+  .wall-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .wall-hero__sigil {
+    width: 46vw;
+    right: -8%;
+    opacity: 0.24;
+  }
+  .wall-hero__bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.6rem;
+  }
+  .wall-hero__stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 640px) {
+  .wall-grid {
+    grid-template-columns: 1fr;
+  }
+  .wall-hero__title {
+    font-size: clamp(2.6rem, 14vw, 4rem);
+  }
+  .wall-foot {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wall-card {
+    transition: none;
+  }
+}

@@ -50,6 +50,7 @@ export const SITE = {
   nav: [
     { label: '首页', href: '/' },
     { label: '文章', href: '/blog/' },
+    { label: '留言', href: '/wall/' },
     { label: '关于', href: '/about/' },
   ],
 

@@ -9,6 +9,7 @@
  *
  * 路由：/api/comments
  *   GET    ?slug=xxx            列出某篇文章的留言
+ *   GET    ?recent=1&limit=60   跨文章聚合最近留言（留言墙用）
  *   POST   {slug,name,body,...} 发表留言（匿名）
  *   DELETE ?slug=xxx&id=xxx     删除留言（需要 x-admin-token 头）
  *
@@ -110,6 +111,49 @@ async function handleList(context, req) {
   return send(context, 200, { count: comments.length, comments });
 }
 
+/**
+ * 跨文章聚合：给「留言墙」用。
+ * 表存储按 slug 分区，这里扫全表再按时间倒序取最近 N 条。
+ * 留言总量很小（每篇上限 500、目前几十条），一次扫描足够便宜；
+ * 仍然加一个上限，避免未来数据异常时拖垮函数。
+ */
+const MAX_RECENT_SCAN = 5000;
+const MAX_RECENT_LIMIT = 100;
+
+async function handleRecent(context, req) {
+  const rawLimit = Number.parseInt(String((req.query && req.query.limit) || '60'), 10);
+  const limit = Number.isFinite(rawLimit)
+    ? Math.min(MAX_RECENT_LIMIT, Math.max(1, rawLimit))
+    : 60;
+
+  const client = getClient();
+  const comments = [];
+
+  const iterator = client.listEntities();
+  for await (const entity of iterator) {
+    if (!entity || !entity.partitionKey || !entity.body) continue;
+    comments.push({
+      slug: entity.partitionKey,
+      ...publicComment(entity),
+    });
+    if (comments.length >= MAX_RECENT_SCAN) break;
+  }
+
+  comments.sort((a, b) => {
+    const ta = Date.parse(a.createdAt) || 0;
+    const tb = Date.parse(b.createdAt) || 0;
+    if (tb !== ta) return tb - ta;
+    return String(b.id).localeCompare(String(a.id));
+  });
+
+  const recent = comments.slice(0, limit);
+  return send(context, 200, {
+    count: recent.length,
+    total: comments.length,
+    comments: recent,
+  });
+}
+
 async function handleCreate(context, req) {
   const input = req.body || {};
 
@@ -202,7 +246,12 @@ module.exports = async function (context, req) {
   const method = String(req.method || 'GET').toUpperCase();
 
   try {
-    if (method === 'GET') return await handleList(context, req);
+    if (method === 'GET') {
+      // ?recent=1 走跨文章聚合，其余（?slug=xxx）照旧列出单篇留言
+      const recent = String((req.query && req.query.recent) || '').toLowerCase();
+      if (recent === '1' || recent === 'true') return await handleRecent(context, req);
+      return await handleList(context, req);
+    }
     if (method === 'POST') return await handleCreate(context, req);
     if (method === 'DELETE') return await handleDelete(context, req);
     return send(context, 405, { error: '不支持的请求方法' });

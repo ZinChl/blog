@@ -1,0 +1,345 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../site.config';
+
+/**
+ * 留言墙 —— 把散落在每篇文章下的留言按时间聚到一面墙上。
+ * 留言是动态数据，这里只把「文章 id → 标题 / URL」的索引静态烘进页面，
+ * 真正的留言在浏览器里通过 /api/comments?recent=1 拉取。
+ */
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+const articleIndex = posts.map((post) => ({
+  id: post.id,
+  title: post.data.title,
+  url: `/blog/${post.id}/`,
+}));
+
+// 内嵌 JSON：转义 <，避免标题里的字符提前闭合 script
+const articleJson = JSON.stringify(articleIndex).replace(/</g, '\\u003c');
+---
+
+<BaseLayout title="留言墙" description="散落在每篇文章里的留言，按时间收拢到这一面墙上。">
+  <div class="wall" data-wall>
+    <!-- 题头 -->
+    <header class="wall-hero">
+      <div class="wall-hero__glow" aria-hidden="true"></div>
+      <div class="wall-hero__grid" aria-hidden="true"></div>
+      <div class="wall-hero__sigil" aria-hidden="true">
+        <svg viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="110" cy="110" r="86" stroke="currentColor" stroke-opacity=".24" stroke-width=".8"></circle>
+          <circle
+            class="wall-sigil__dash"
+            cx="110"
+            cy="110"
+            r="62"
+            stroke="currentColor"
+            stroke-opacity=".16"
+            stroke-width=".7"
+            stroke-dasharray="1.4 5"></circle>
+          <g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-opacity=".32">
+            <path d="M64 88h92"></path>
+            <path d="M64 110h64"></path>
+            <path d="M64 132h38"></path>
+          </g>
+          <path
+            d="M110 10v14M110 196v14M10 110h14M196 110h14"
+            stroke="currentColor"
+            stroke-opacity=".4"
+            stroke-width=".8"
+            stroke-linecap="round"></path>
+          <circle class="wall-sigil__ice" cx="162" cy="74" r="3.2" fill="currentColor"></circle>
+          <circle class="wall-sigil__gold" cx="58" cy="148" r="2.4" fill="currentColor"></circle>
+        </svg>
+      </div>
+
+      <div class="wrap wall-hero__inner">
+        <div class="wall-hero__top" data-reveal="fade">
+          <p class="eyebrow">TRANSMISSIONS / 留言墙</p>
+          <p class="wall-hero__vol mono">
+            VOL. I <span aria-hidden="true">·</span> {SITE.locationEn}
+            <span aria-hidden="true">·</span> {SITE.clockLabel}
+          </p>
+        </div>
+
+        <h1 class="wall-hero__title" data-reveal>
+          留言<em>墙</em>
+          <span class="wall-hero__latin" aria-hidden="true">The Signal Wall</span>
+        </h1>
+
+        <div class="wall-hero__bottom">
+          <p class="wall-hero__intro" data-reveal style="--reveal-delay:.08s">
+            散落在每篇文章里的留言，按时间收拢到这一面墙上。点开任意一张卡片，
+            回到它落下的那篇文章，也回到那条留言旁边。
+          </p>
+
+          <dl class="wall-hero__stats" data-reveal style="--reveal-delay:.16s">
+            <div class="wall-stat">
+              <dt>SIGNALS</dt>
+              <dd><span data-wall-total>—</span><span>条</span></dd>
+            </div>
+            <div class="wall-stat">
+              <dt>SOURCES</dt>
+              <dd><span data-wall-sources>—</span><span>篇</span></dd>
+            </div>
+            <div class="wall-stat">
+              <dt>LATEST</dt>
+              <dd class="wall-stat--date" data-wall-latest>—</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </header>
+
+    <!-- 墙 -->
+    <div class="wrap wall-body">
+      <div class="wall-bar" data-reveal="fade">
+        <p class="wall-bar__status mono" data-wall-status aria-live="polite">正在接收信号…</p>
+        <button class="wall-refresh" type="button" data-wall-refresh>
+          刷新 <span aria-hidden="true">↻</span>
+        </button>
+      </div>
+
+      <noscript>
+        <p class="wall-noscript">
+          留言墙需要 JavaScript 才能读取留言数据。开启后刷新即可，或者直接去
+          <a class="link-underline" href="/blog/">文章页的留言区</a>。
+        </p>
+      </noscript>
+
+      <h2 class="sr-only" id="wall-list-title">最近留言</h2>
+      <div class="wall-grid is-loading" data-wall-grid aria-labelledby="wall-list-title"></div>
+
+      <p class="wall-note mono" data-wall-note hidden></p>
+
+      <div class="wall-empty" data-wall-empty hidden>
+        <span class="wall-empty__mark" aria-hidden="true">✦</span>
+        <p>还没有收到任何信号。</p>
+        <a class="link-underline" href="/blog/">去文章里留下第一条 <span aria-hidden="true">→</span></a>
+      </div>
+
+      <div class="wall-error" data-wall-error hidden>
+        <p class="wall-error__text">信号暂时没有接通。</p>
+        <button class="btn btn--ghost" type="button" data-wall-retry>
+          重试 <span aria-hidden="true">↻</span>
+        </button>
+      </div>
+
+      <footer class="wall-foot" data-reveal="fade">
+        <p class="wall-foot__line">
+          每一条留言都来自某篇文章的留言区，按时间倒序排列。
+          <span aria-hidden="true">·</span>
+          点卡片回到原文。
+        </p>
+        <a class="btn" href="/blog/">去看文章 <span class="btn-arrow" aria-hidden="true">↗</span></a>
+      </footer>
+    </div>
+  </div>
+
+  <script type="application/json" id="wall-articles" is:inline set:html={articleJson}></script>
+
+  <script>
+    interface WallArticle {
+      id: string;
+      title: string;
+      url: string;
+    }
+
+    interface WallComment {
+      id: string;
+      slug: string;
+      name: string;
+      body: string;
+      createdAt: string;
+    }
+
+    interface RecentPayload {
+      count?: number;
+      total?: number;
+      comments?: WallComment[];
+      error?: string;
+    }
+
+    const wall = document.querySelector<HTMLElement>('[data-wall]');
+
+    if (wall) {
+      const API = '/api/comments?recent=1&limit=100';
+
+      const grid = wall.querySelector<HTMLElement>('[data-wall-grid]');
+      const statusEl = wall.querySelector<HTMLElement>('[data-wall-status]');
+      const totalEl = wall.querySelector<HTMLElement>('[data-wall-total]');
+      const sourcesEl = wall.querySelector<HTMLElement>('[data-wall-sources]');
+      const latestEl = wall.querySelector<HTMLElement>('[data-wall-latest]');
+      const noteEl = wall.querySelector<HTMLElement>('[data-wall-note]');
+      const emptyEl = wall.querySelector<HTMLElement>('[data-wall-empty]');
+      const errorEl = wall.querySelector<HTMLElement>('[data-wall-error]');
+      const retryBtn = wall.querySelector<HTMLButtonElement>('[data-wall-retry]');
+      const refreshBtn = wall.querySelector<HTMLButtonElement>('[data-wall-refresh]');
+
+      let articles: WallArticle[] = [];
+      try {
+        articles = JSON.parse(document.getElementById('wall-articles')?.textContent || '[]');
+      } catch {
+        articles = [];
+      }
+      const articleById = new Map(articles.map((article) => [article.id, article]));
+
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const fullTime = (iso: string) => {
+        const d = new Date(iso);
+        if (Number.isNaN(d.getTime())) return '';
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      };
+      const shortTime = (iso: string) => {
+        const d = new Date(iso);
+        if (Number.isNaN(d.getTime())) return '';
+        return `${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      };
+
+      function setHidden(el: HTMLElement | null, hidden: boolean) {
+        if (el) el.hidden = hidden;
+      }
+
+      function setStatus(text: string) {
+        if (statusEl) statusEl.textContent = text;
+      }
+
+      function buildCard(comment: WallComment, index: number, total: number): HTMLAnchorElement | null {
+        const article = articleById.get(comment.slug);
+        if (!article) return null;
+
+        const link = document.createElement('a');
+        link.className = 'wall-card';
+        link.href = `${article.url}#comment-${encodeURIComponent(comment.id)}`;
+        link.style.setProperty('--i', String(Math.min(index, 12)));
+
+        const no = document.createElement('span');
+        no.className = 'wall-card__no mono';
+        no.setAttribute('aria-hidden', 'true');
+        no.textContent = `Nº ${String(total - index).padStart(3, '0')}`;
+
+        const head = document.createElement('div');
+        head.className = 'wall-card__head';
+
+        const name = document.createElement('span');
+        name.className = 'wall-card__name';
+        name.textContent = comment.name || '匿名';
+
+        const time = document.createElement('time');
+        time.className = 'wall-card__time mono';
+        time.dateTime = comment.createdAt;
+        time.title = fullTime(comment.createdAt);
+        time.textContent = shortTime(comment.createdAt);
+
+        head.append(name, time);
+
+        const body = document.createElement('p');
+        body.className = 'wall-card__body';
+        body.textContent = comment.body;
+
+        const foot = document.createElement('div');
+        foot.className = 'wall-card__foot';
+
+        const source = document.createElement('span');
+        source.className = 'wall-card__src';
+        source.textContent = `《${article.title}》`;
+
+        const arrow = document.createElement('span');
+        arrow.className = 'wall-card__arrow';
+        arrow.setAttribute('aria-hidden', 'true');
+        arrow.textContent = '↗';
+
+        foot.append(source, arrow);
+        link.append(no, head, body, foot);
+
+        return link;
+      }
+
+      function paintStats(comments: WallComment[]) {
+        const sources = new Set(comments.map((comment) => comment.slug));
+        const latest = comments.reduce((acc, comment) => {
+          return comment.createdAt > acc ? comment.createdAt : acc;
+        }, '');
+
+        if (totalEl) totalEl.textContent = String(comments.length);
+        if (sourcesEl) sourcesEl.textContent = String(sources.size);
+        if (latestEl) latestEl.textContent = latest ? shortTime(latest) : '—';
+      }
+
+      function render(comments: WallComment[], total: number) {
+        if (!grid) return;
+        grid.classList.remove('is-loading');
+        grid.replaceChildren();
+        paintStats(comments);
+
+        setHidden(emptyEl, comments.length > 0);
+        setHidden(noteEl, true);
+
+        if (comments.length === 0) {
+          setStatus('还没有信号');
+          return;
+        }
+
+        const cards: HTMLAnchorElement[] = [];
+        comments.forEach((comment, index) => {
+          const card = buildCard(comment, index, comments.length);
+          if (card) cards.push(card);
+        });
+
+        if (cards.length === 0) {
+          setStatus('还没有信号');
+          setHidden(emptyEl, false);
+          return;
+        }
+
+        grid.append(...cards);
+        setStatus(`已接收 ${cards.length} 条信号 · 按时间倒序`);
+
+        if (total > comments.length && noteEl) {
+          noteEl.textContent = `展示最近 ${comments.length} 条 · 共 ${total} 条`;
+          setHidden(noteEl, false);
+        }
+      }
+
+      async function load() {
+        setHidden(errorEl, true);
+        setHidden(emptyEl, true);
+        setStatus('正在接收信号…');
+        if (refreshBtn) refreshBtn.disabled = true;
+
+        try {
+          const res = await fetch(API, { headers: { Accept: 'application/json' } });
+          const data = (await res.json().catch(() => ({}))) as RecentPayload;
+          if (!res.ok) throw new Error(data.error || '加载失败');
+
+          const comments = (data.comments || [])
+            .filter((comment) => articleById.has(comment.slug))
+            .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+
+          render(comments, data.total ?? comments.length);
+        } catch (err) {
+          if (grid) grid.classList.remove('is-loading');
+          setStatus('信号接收失败');
+          setHidden(errorEl, false);
+          if (errorEl) {
+            const text = errorEl.querySelector<HTMLElement>('.wall-error__text');
+            if (text) {
+              const message = err instanceof Error ? err.message : String(err);
+              text.textContent = `信号暂时没有接通（${message}）。`;
+            }
+          }
+        } finally {
+          if (refreshBtn) refreshBtn.disabled = false;
+        }
+      }
+
+      retryBtn?.addEventListener('click', () => void load());
+      refreshBtn?.addEventListener('click', () => void load());
+
+      void load();
+    }
+  </script>
+</BaseLayout>

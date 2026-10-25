@@ -13,13 +13,16 @@ interface Props {
 const { slug } = Astro.props;
 ---
 
-<section class="comments" data-comments data-slug={slug}>
+<section class="comments" id="comments" data-comments data-slug={slug}>
   <header class="comments__head">
     <div class="comments__titles">
       <p class="comments__eyebrow eyebrow eyebrow--plain">TRANSMISSIONS</p>
       <h2 class="comments__title">留言<span class="comments-count" data-count></span></h2>
     </div>
-    <p class="comments__hint">留下一条信号，等它穿过星海。</p>
+    <div class="comments__aside">
+      <p class="comments__hint">留下一条信号，等它穿过星海。</p>
+      <a class="comments__wall-link mono" href="/wall/">全部留言 <span aria-hidden="true">↗</span></a>
+    </div>
   </header>
 
   <div class="comments__list" data-list>
@@ -124,6 +127,8 @@ const { slug } = Astro.props;
     function buildComment(comment) {
       const item = document.createElement('article');
       item.className = 'comment';
+      item.id = `comment-${comment.id}`;
+      item.tabIndex = -1;
 
       const head = document.createElement('div');
       head.className = 'comment-head';
@@ -172,6 +177,34 @@ const { slug } = Astro.props;
       }
     }
 
+    // 从留言墙点进来时，滚动到对应的那条留言，并用冰蓝描边闪一下
+    let hashHandled = false;
+    function revealFromHash() {
+      if (hashHandled) return;
+      hashHandled = true;
+      const raw = window.location.hash;
+      if (!raw.startsWith('#comment-')) return;
+
+      let target = null;
+      try {
+        target = document.getElementById(decodeURIComponent(raw.slice(1)));
+      } catch {
+        target = null;
+      }
+
+      if (!target) {
+        // 留言可能已经被删了：退回到留言区顶部，至少不让读者停在页面最上面
+        root.scrollIntoView({ block: 'start' });
+        return;
+      }
+
+      target.classList.add('is-target');
+      requestAnimationFrame(() => {
+        target.scrollIntoView({ block: 'start' });
+        target.focus({ preventScroll: true });
+      });
+    }
+
     async function load() {
       setStatus(statusEl, '正在加载留言…');
       try {
@@ -184,6 +217,7 @@ const { slug } = Astro.props;
         const comments = data.comments || [];
         countEl.textContent = comments.length ? `（${comments.length}）` : '';
         renderComments(comments);
+        revealFromHash();
       } catch (err) {
         // 本地没有 Functions API / 网络暂时不通时，给一句人话，而不是把异常直接抛给读者
         setStatus(statusEl, `留言暂时没有接通（${err.message}）。可以稍后刷新再试试。`, 'error');

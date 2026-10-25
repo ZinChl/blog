@@ -101,7 +101,8 @@ JetBrains Mono 元信息 + 系统中文衬线标题 / 无衬线正文；直角�
 
 - **设计令牌**：`src/styles/tokens.css`（颜色、字体、间距、缓动都在这里；改主题只动这一个文件）
 - **样式分层**：`site.css`（页头页脚/跑马灯/转场）、`hero.css`（纯黑首屏 + 轨道字标）、
-  `home.css`（目录式索引 / 自述区 / 档案入口）、`pages.css`（列表页/文章页/关于/404/留言）
+  `home.css`（目录式索引 / 自述区 / 档案入口）、`pages.css`（列表页/文章页/关于/404/留言）、
+  `wall.css`（留言墙）
 - **字体**：西文自托管 Cormorant Garamond（展示，含真斜体）与 JetBrains Mono（元信息），
   文件在 `public/fonts/`；中文标题走系统衬线（Songti SC / 宋体 / Noto Serif SC），正文走系统无衬线，不额外下载中文字体
 - **动效**：`src/scripts/motion.ts`（滚动显现、Lenis 平滑滚动、实时时钟、磁吸按钮、滚动进度），
@@ -119,6 +120,10 @@ JetBrains Mono 元信息 + 系统中文衬线标题 / 无衬线正文；直角�
   （软件渲染、Save-Data、低配直接不用），运行中统计帧时间继续降分辨率与积分步数，
   压到最低仍掉帧则回退原轨道 SVG；`prefers-reduced-motion` 只渲染一帧静态画面；
   浅色主题下保留轨道 SVG（黑洞作为深空效果只在深色主题启用）
+- **留言墙**：`/wall/` 把每篇文章下的留言按时间倒序收拢到一面卡片墙上。后端多了一个
+  `GET /api/comments?recent=1&limit=100`：扫一遍 `comments` 表、按时间倒序返回最近 N 条
+  （留言量小，跨分区扫描足够快）。每张卡片链到 `/blog/<slug>/#comment-<id>`，
+  文章页的留言区会给目标留言加冰蓝描边并自动滚到它旁边；文章页留言标题旁也有「全部留言 ↗」入口。
 - **主题预览**：任意页面加 `?theme=light` 或 `?theme=dark`；浅色是纯白纸面 + 黑字。
   首页始终是单一底色，只有内页个别模块（如文章作者卡）用反色块
 - **可访问性**：键盘焦点可见、`prefers-reduced-motion` 全量降级、无 JS 时内容完整可见
@@ -132,7 +137,7 @@ JetBrains Mono 元信息 + 系统中文衬线标题 / 无衬线正文；直角�
 ├── astro.config.mjs            # Astro 配置（含站点域名）
 ├── scripts/copy-cms.mjs        # 构建时准备编辑器资源
 ├── api/                        # ★ 留言后端（SWA 托管函数）
-│   ├── comments/               #   GET 列表 / POST 发表 / DELETE 删除
+│   ├── comments/               #   GET 列表 / GET 最近聚合 / POST 发表 / DELETE 删除
 │   ├── host.json
 │   └── package.json
 ├── public/
@@ -155,11 +160,12 @@ JetBrains Mono 元信息 + 系统中文衬线标题 / 无衬线正文；直角�
     │   ├── site.css            # 页头 / 页脚 / 跑马灯 / 页面转场
     │   ├── hero.css            # 首屏 / 星盘 / 星野
     │   ├── home.css            # 首页卡片 / 自述 / 数据统计
-    │   └── pages.css           # 列表页 / 文章页 / 关于 / 404 / 留言
+    │   ├── pages.css           # 列表页 / 文章页 / 关于 / 404 / 留言
+    │   └── wall.css            # 留言墙
     ├── scripts/motion.ts       # 动效系统（滚动显现 / Lenis / 时钟 / 磁吸）
     ├── components/
     │   ├── Hero.astro          # 首屏
-    │   ├── Astrolabe.astro     # 星盘插图
+    │   ├── BlackHole.astro     # 首屏黑洞着色器
     │   ├── Starfield.astro     # WebGL 星场
     │   ├── StarChart.astro     # 文章星图缩略
     │   ├── Cursor.astro        # 自定义光标
@@ -172,6 +178,7 @@ JetBrains Mono 元信息 + 系统中文衬线标题 / 无衬线正文；直角�
     └── pages/
         ├── index.astro         # 首页
         ├── about.astro         # 关于
+        ├── wall.astro          # 留言墙
         ├── 404.astro
         ├── rss.xml.js          # RSS 订阅
         └── blog/
