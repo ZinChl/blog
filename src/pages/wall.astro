@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import WallSky from '../components/WallSky.astro';
 import { SITE } from '../site.config';
 
 /**
@@ -24,36 +25,16 @@ const articleJson = JSON.stringify(articleIndex).replace(/</g, '\\u003c');
 
 <BaseLayout title="留言墙" description="散落在每篇文章里的留言，按时间收拢到这一面墙上。">
   <div class="wall" data-wall>
+    <WallSky />
+
     <!-- 题头 -->
     <header class="wall-hero">
       <div class="wall-hero__glow" aria-hidden="true"></div>
       <div class="wall-hero__grid" aria-hidden="true"></div>
-      <div class="wall-hero__sigil" aria-hidden="true">
-        <svg viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="110" cy="110" r="86" stroke="currentColor" stroke-opacity=".24" stroke-width=".8"></circle>
-          <circle
-            class="wall-sigil__dash"
-            cx="110"
-            cy="110"
-            r="62"
-            stroke="currentColor"
-            stroke-opacity=".16"
-            stroke-width=".7"
-            stroke-dasharray="1.4 5"></circle>
-          <g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-opacity=".32">
-            <path d="M64 88h92"></path>
-            <path d="M64 110h64"></path>
-            <path d="M64 132h38"></path>
-          </g>
-          <path
-            d="M110 10v14M110 196v14M10 110h14M196 110h14"
-            stroke="currentColor"
-            stroke-opacity=".4"
-            stroke-width=".8"
-            stroke-linecap="round"></path>
-          <circle class="wall-sigil__ice" cx="162" cy="74" r="3.2" fill="currentColor"></circle>
-          <circle class="wall-sigil__gold" cx="58" cy="148" r="2.4" fill="currentColor"></circle>
-        </svg>
+      <div class="wall-hero__constellation" data-constellation aria-hidden="true">
+        <canvas></canvas>
+        <span class="wall-hero__constellation-hint mono">SIGNAL CONSTELLATION · 点星定位</span>
+        <div class="wall-constellation-tip" data-constellation-tip></div>
       </div>
 
       <div class="wrap wall-hero__inner">
@@ -207,6 +188,417 @@ const articleJson = JSON.stringify(articleIndex).replace(/</g, '\\u003c');
         if (statusEl) statusEl.textContent = text;
       }
 
+      /* ---------- 题头星图：把最近留言画成一张可点击的星座 ---------- */
+      interface ConstellationHandle {
+        setComments: (list: WallComment[]) => void;
+        setCardHover: (id: string | null) => void;
+      }
+
+      const constellationRoot = wall.querySelector<HTMLElement>('[data-constellation]');
+      let constellation: ConstellationHandle | null = null;
+
+      function createConstellation(root: HTMLElement): ConstellationHandle | null {
+        const canvas = root.querySelector<HTMLCanvasElement>('canvas');
+        const tip = root.querySelector<HTMLElement>('[data-constellation-tip]');
+        const ctx = canvas?.getContext('2d');
+        if (!canvas || !ctx) return null;
+
+        interface Star {
+          comment: WallComment;
+          angle: number;
+          rad: number;
+          size: number;
+          gold: boolean;
+          phase: number;
+        }
+
+        const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+        let comments: WallComment[] = [];
+        let stars: Star[] = [];
+        let w = 0;
+        let h = 0;
+        let dpr = 1;
+        let localHover: string | null = null;
+        let cardHover: string | null = null;
+        let running = false;
+        let raf = 0;
+        let lastFrame = 0;
+        let time = 0;
+        let pointerInside = false;
+        const pointer = { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5 };
+
+        const hash01 = (input: string) => {
+          let hsh = 2166136261;
+          for (let i = 0; i < input.length; i += 1) {
+            hsh ^= input.charCodeAt(i);
+            hsh = Math.imul(hsh, 16777619);
+          }
+          return ((hsh >>> 0) % 10000) / 10000;
+        };
+
+        const activeId = () => localHover || cardHover;
+
+        const starPoint = (star: Star) => {
+          const radius = Math.min(w, h) * 0.44;
+          const ox = (pointer.x - 0.5) * 10;
+          const oy = (pointer.y - 0.5) * 8;
+          return {
+            x: w / 2 + ox + Math.cos(star.angle) * star.rad * radius,
+            y: h / 2 + oy + Math.sin(star.angle) * star.rad * radius,
+          };
+        };
+
+        function setActiveCard(id: string | null) {
+          if (!grid) return;
+          grid.querySelectorAll<HTMLElement>('.wall-card.is-linked').forEach((el) => {
+            el.classList.remove('is-linked');
+          });
+          if (!id) return;
+          grid
+            .querySelector<HTMLElement>(`.wall-card[data-comment-id="${id}"]`)
+            ?.classList.add('is-linked');
+        }
+
+        function showTip(star: Star | null) {
+          if (!tip) return;
+          if (!star) {
+            tip.classList.remove('is-visible');
+            return;
+          }
+          const point = starPoint(star);
+          const body = star.comment.body.replace(/\s+/g, ' ');
+          const excerpt = body.length > 30 ? `${body.slice(0, 30)}…` : body;
+          tip.textContent = `${star.comment.name || '匿名'} · ${shortTime(star.comment.createdAt)} — ${excerpt}`;
+
+          // 靠上的星把说明放到下方，避免压住 VOL. 行；左右再收进画布内
+          const below = point.y < h * 0.3;
+          tip.classList.toggle('is-below', below);
+          tip.classList.add('is-visible');
+          const tipWidth = Math.max(120, Math.min(240, tip.offsetWidth || 170));
+          const left = Math.min(Math.max(point.x, tipWidth / 2 + 6), Math.max(6, w - tipWidth / 2 - 6));
+          tip.style.left = `${left}px`;
+          tip.style.top = `${point.y}px`;
+        }
+
+        function layout() {
+          const count = comments.length;
+          stars = comments.map((comment, index) => {
+            const a = hash01(`${comment.id}:a`);
+            const b = hash01(`${comment.id}:b`);
+            const angle = index * 0.86 + 0.7 + (a - 0.5) * 0.16;
+            const rad =
+              0.2 +
+              0.66 * Math.pow((index + 1) / Math.max(1, count), 0.8) +
+              (b - 0.5) * 0.05;
+            return {
+              comment,
+              angle,
+              rad,
+              size: 1.6 + (1 - index / Math.max(1, count)) * 1.5,
+              gold: a > 0.86,
+              phase: b * Math.PI * 2,
+            };
+          });
+        }
+
+        function resize() {
+          const rect = root.getBoundingClientRect();
+          if (rect.width < 10 || rect.height < 10) return;
+          dpr = Math.min(window.devicePixelRatio || 1, 2);
+          w = rect.width;
+          h = rect.height;
+          canvas.width = Math.round(w * dpr);
+          canvas.height = Math.round(h * dpr);
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function draw(animate: boolean) {
+          if (!w || !h) return;
+          ctx.clearRect(0, 0, w, h);
+
+          const cx = w / 2 + (pointer.x - 0.5) * 10;
+          const cy = h / 2 + (pointer.y - 0.5) * 8;
+          const radius = Math.min(w, h) * 0.44;
+
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.lineWidth = 0.7;
+
+          ctx.strokeStyle = 'rgba(242, 242, 239, 0.16)';
+          ctx.beginPath();
+          ctx.arc(0, 0, radius * 0.98, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.strokeStyle = 'rgba(159, 230, 255, 0.22)';
+          ctx.setLineDash([2, 7]);
+          ctx.lineDashOffset = animate ? -time * 13 : 0;
+          ctx.beginPath();
+          ctx.arc(0, 0, radius * 0.74, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.strokeStyle = 'rgba(242, 242, 239, 0.09)';
+          ctx.beginPath();
+          ctx.arc(0, 0, radius * 0.46, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.strokeStyle = 'rgba(242, 242, 239, 0.08)';
+          ctx.beginPath();
+          ctx.moveTo(-radius * 1.04, 0);
+          ctx.lineTo(radius * 1.04, 0);
+          ctx.moveTo(0, -radius * 1.04);
+          ctx.lineTo(0, radius * 1.04);
+          ctx.stroke();
+
+          for (let i = 0; i < 12; i += 1) {
+            const angle = (i / 12) * Math.PI * 2;
+            const inner = i % 3 === 0 ? radius * 0.94 : radius * 0.965;
+            ctx.beginPath();
+            ctx.moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner);
+            ctx.lineTo(Math.cos(angle) * radius * 1.02, Math.sin(angle) * radius * 1.02);
+            ctx.stroke();
+          }
+          ctx.restore();
+
+          // 星图中心的小黑洞：一个黑色剪影 + 一圈冷光，和首页那颗大黑洞呼应
+          const coreRadius = Math.max(7, radius * 0.06);
+          const coreGlow = ctx.createRadialGradient(cx, cy, coreRadius * 0.6, cx, cy, coreRadius * 3.4);
+          coreGlow.addColorStop(0, 'rgba(159, 230, 255, 0.16)');
+          coreGlow.addColorStop(1, 'rgba(159, 230, 255, 0)');
+          ctx.fillStyle = coreGlow;
+          ctx.beginPath();
+          ctx.arc(cx, cy, coreRadius * 3.4, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#000000';
+          ctx.beginPath();
+          ctx.arc(cx, cy, coreRadius, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = 'rgba(214, 247, 255, 0.5)';
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.arc(cx, cy, coreRadius + 2.4, 0, Math.PI * 2);
+          ctx.stroke();
+
+          if (stars.length === 0) return;
+
+          const points = stars.map(starPoint);
+
+          ctx.beginPath();
+          points.forEach((point, index) => {
+            if (index === 0) ctx.moveTo(point.x, point.y);
+            else ctx.lineTo(point.x, point.y);
+          });
+          ctx.strokeStyle = 'rgba(159, 230, 255, 0.13)';
+          ctx.lineWidth = 0.7;
+          ctx.stroke();
+
+          // 沿着星座路径往前跑的信号点
+          if (animate && stars.length > 1) {
+            const span = stars.length - 1;
+            const progress = ((time * 0.055) % 1) * span;
+            const index = Math.floor(progress);
+            const frac = progress - index;
+            const a = points[index];
+            const b = points[Math.min(index + 1, points.length - 1)];
+            const x = a.x + (b.x - a.x) * frac;
+            const y = a.y + (b.y - a.y) * frac;
+
+            const glow = ctx.createRadialGradient(x, y, 0, x, y, 10);
+            glow.addColorStop(0, 'rgba(214, 247, 255, 0.85)');
+            glow.addColorStop(1, 'rgba(159, 230, 255, 0)');
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.arc(x, y, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(214, 247, 255, 0.95)';
+            ctx.beginPath();
+            ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          const active = activeId();
+          stars.forEach((star, index) => {
+            const point = points[index];
+            const isActive = star.comment.id === active;
+            const twinkle = animate ? 0.75 + 0.25 * Math.sin(time * 1.8 + star.phase) : 0.9;
+            const r = star.size * (isActive ? 1.7 : 1) * twinkle;
+
+            const haloRadius = r * (isActive ? 7 : 4.5);
+            const halo = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, haloRadius);
+            halo.addColorStop(
+              0,
+              star.gold ? 'rgba(230, 180, 95, 0.30)' : 'rgba(159, 230, 255, 0.26)',
+            );
+            halo.addColorStop(1, star.gold ? 'rgba(230, 180, 95, 0)' : 'rgba(159, 230, 255, 0)');
+            ctx.fillStyle = halo;
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, haloRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = isActive
+              ? '#d6f7ff'
+              : star.gold
+                ? '#e6b45f'
+                : 'rgba(242, 242, 239, 0.92)';
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, r, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (isActive) {
+              ctx.strokeStyle = 'rgba(159, 230, 255, 0.75)';
+              ctx.lineWidth = 0.9;
+              ctx.setLineDash([3, 4]);
+              ctx.lineDashOffset = animate ? -time * 20 : 0;
+              ctx.beginPath();
+              ctx.arc(point.x, point.y, r + 6, 0, Math.PI * 2);
+              ctx.stroke();
+              ctx.setLineDash([]);
+            }
+          });
+        }
+
+        function hitTest(clientX: number, clientY: number): Star | null {
+          if (!stars.length) return null;
+          const rect = canvas.getBoundingClientRect();
+          const x = clientX - rect.left;
+          const y = clientY - rect.top;
+          let best: Star | null = null;
+          let bestDistance = 20;
+          for (const star of stars) {
+            const point = starPoint(star);
+            const distance = Math.hypot(point.x - x, point.y - y);
+            if (distance < bestDistance) {
+              best = star;
+              bestDistance = distance;
+            }
+          }
+          return best;
+        }
+
+        function setHover(star: Star | null) {
+          const id = star?.comment.id ?? null;
+          if (id === localHover) return;
+          localHover = id;
+          showTip(star);
+          setActiveCard(id);
+          if (!running) draw(false);
+        }
+
+        function frame(now: number) {
+          raf = 0;
+          if (!running) return;
+          const delta = Math.min(0.05, Math.max(0, (now - (lastFrame || now)) / 1000));
+          lastFrame = now;
+          time += delta;
+          pointer.x += (pointer.tx - pointer.x) * 0.06;
+          pointer.y += (pointer.ty - pointer.y) * 0.06;
+          draw(true);
+          raf = requestAnimationFrame(frame);
+        }
+
+        function start() {
+          if (running || reduceQuery.matches) return;
+          running = true;
+          lastFrame = 0;
+          if (!raf) raf = requestAnimationFrame(frame);
+        }
+
+        function stop() {
+          running = false;
+          if (raf) cancelAnimationFrame(raf);
+          raf = 0;
+        }
+
+        canvas.addEventListener('pointermove', (event) => {
+          const rect = canvas.getBoundingClientRect();
+          pointer.tx = (event.clientX - rect.left) / Math.max(1, rect.width);
+          pointer.ty = (event.clientY - rect.top) / Math.max(1, rect.height);
+          pointerInside = true;
+          setHover(hitTest(event.clientX, event.clientY));
+          if (!running && !reduceQuery.matches) start();
+        });
+
+        canvas.addEventListener('pointerleave', () => {
+          pointerInside = false;
+          setHover(null);
+        });
+
+        canvas.addEventListener('click', (event) => {
+          const star = hitTest(event.clientX, event.clientY);
+          if (!star) return;
+          const card = grid?.querySelector<HTMLElement>(
+            `.wall-card[data-comment-id="${star.comment.id}"]`,
+          );
+          if (!card) return;
+
+          const lenis = (window as Window & {
+            lenis?: { scrollTo: (target: Element, options?: { offset?: number }) => void };
+          }).lenis;
+          if (lenis) lenis.scrollTo(card, { offset: -120 });
+          else card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+          card.classList.remove('is-pulsed');
+          void card.offsetWidth;
+          card.classList.add('is-pulsed');
+          window.setTimeout(() => card.classList.remove('is-pulsed'), 1800);
+        });
+
+        const ro = 'ResizeObserver' in window ? new ResizeObserver(() => {
+          resize();
+          if (!running) draw(false);
+        }) : null;
+        ro?.observe(root);
+
+        const io = 'IntersectionObserver' in window
+          ? new IntersectionObserver(
+              (entries) => {
+                for (const entry of entries) {
+                  if (entry.isIntersecting && !reduceQuery.matches) start();
+                  else {
+                    stop();
+                    draw(false);
+                  }
+                }
+              },
+              { threshold: 0.05 },
+            )
+          : null;
+        io?.observe(root);
+
+        const themeObserver = new MutationObserver(() => {
+          resize();
+          if (!running) draw(false);
+        });
+        themeObserver.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ['data-theme'],
+        });
+
+        resize();
+        layout();
+        draw(false);
+        root.classList.add('is-live');
+
+        return {
+          setComments(list: WallComment[]) {
+            comments = list;
+            layout();
+            resize();
+            draw(false);
+          },
+          setCardHover(id: string | null) {
+            cardHover = id;
+            if (!running) draw(false);
+          },
+        };
+      }
+
+      if (constellationRoot) constellation = createConstellation(constellationRoot);
+
       function buildCard(comment: WallComment, index: number, total: number): HTMLAnchorElement | null {
         const article = articleById.get(comment.slug);
         if (!article) return null;
@@ -214,7 +606,11 @@ const articleJson = JSON.stringify(articleIndex).replace(/</g, '\\u003c');
         const link = document.createElement('a');
         link.className = 'wall-card';
         link.href = `${article.url}#comment-${encodeURIComponent(comment.id)}`;
+        link.dataset.commentId = comment.id;
         link.style.setProperty('--i', String(Math.min(index, 12)));
+
+        link.addEventListener('mouseenter', () => constellation?.setCardHover(comment.id));
+        link.addEventListener('mouseleave', () => constellation?.setCardHover(null));
 
         const no = document.createElement('span');
         no.className = 'wall-card__no mono';
@@ -279,6 +675,7 @@ const articleJson = JSON.stringify(articleIndex).replace(/</g, '\\u003c');
         setHidden(noteEl, true);
 
         if (comments.length === 0) {
+          constellation?.setComments([]);
           setStatus('还没有信号');
           return;
         }
@@ -296,6 +693,7 @@ const articleJson = JSON.stringify(articleIndex).replace(/</g, '\\u003c');
         }
 
         grid.append(...cards);
+        constellation?.setComments(comments);
         setStatus(`已接收 ${cards.length} 条信号 · 按时间倒序`);
 
         if (total > comments.length && noteEl) {
@@ -322,6 +720,7 @@ const articleJson = JSON.stringify(articleIndex).replace(/</g, '\\u003c');
           render(comments, data.total ?? comments.length);
         } catch (err) {
           if (grid) grid.classList.remove('is-loading');
+          constellation?.setComments([]);
           setStatus('信号接收失败');
           setHidden(errorEl, false);
           if (errorEl) {

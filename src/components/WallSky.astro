@@ -1,0 +1,331 @@
+---
+/**
+ * WallSky.astro — 留言墙背后的星野
+ * ---------------------------------------------------------------------------
+ * 固定在整个视口后面的一层轻量 2D 星尘（不是 WebGL）：
+ *  - 缓慢漂移 + 鼠标视差；
+ *  - 指针附近的星星会被轻微吸过去，移开后弹回（引力）；
+ *  - 点击页面空白处扩散一圈「引力波」，把附近的星点推开；
+ *  - 偶尔一颗流星；
+ * 只在深色主题启用；prefers-reduced-motion 只画一帧静态星野。
+ */
+---
+
+<div class="wall-sky" data-wall-sky aria-hidden="true">
+  <canvas></canvas>
+</div>
+
+<script>
+  (() => {
+    const wrap = document.querySelector<HTMLElement>('[data-wall-sky]');
+    const canvas = wrap?.querySelector<HTMLCanvasElement>('canvas');
+    if (!wrap || !canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      wrap.hidden = true;
+      return;
+    }
+
+    interface SkyStar {
+      /** 归一化基准位置 */
+      bx: number;
+      by: number;
+      /** 深度：影响视差与大小 */
+      z: number;
+      r: number;
+      a: number;
+      phase: number;
+      speed: number;
+      tint: number;
+      /** 弹簧偏移量 / 速度 */
+      ox: number;
+      oy: number;
+      vx: number;
+      vy: number;
+    }
+
+    interface Ripple {
+      x: number;
+      y: number;
+      life: number;
+    }
+
+    interface ShootingStar {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      life: number;
+      length: number;
+    }
+
+    const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const themeIsLight = () => document.documentElement.dataset.theme === 'light';
+
+    const rand = (a: number, b: number) => a + Math.random() * (b - a);
+
+    let w = 0;
+    let h = 0;
+    let dpr = 1;
+    let stars: SkyStar[] = [];
+    let ripples: Ripple[] = [];
+    let shooting: ShootingStar | null = null;
+    let nextShooting = 0;
+    let visible = true;
+    let running = false;
+    let raf = 0;
+    let lastNow = 0;
+    let time = 0;
+
+    const pointer = { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5 };
+
+    function seed() {
+      const count = Math.max(70, Math.min(170, Math.round((w * h) / 14500)));
+      stars = Array.from({ length: count }, () => ({
+        bx: Math.random(),
+        by: Math.random(),
+        z: rand(0.25, 1),
+        r: rand(0.45, 1.55),
+        a: rand(0.1, 0.42),
+        phase: rand(0, Math.PI * 2),
+        speed: rand(0.25, 0.7),
+        tint: Math.random(),
+        ox: 0,
+        oy: 0,
+        vx: 0,
+        vy: 0,
+      }));
+    }
+
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      seed();
+      if (!running) draw(false);
+    }
+
+    function starColor(tint: number, alpha: number): string {
+      if (tint > 0.955) return `rgba(230, 180, 95, ${alpha.toFixed(3)})`;
+      if (tint > 0.55) return `rgba(159, 230, 255, ${alpha.toFixed(3)})`;
+      return `rgba(242, 242, 239, ${alpha.toFixed(3)})`;
+    }
+
+    function draw(animateAt: number | false) {
+      const animate = animateAt !== false;
+      ctx.clearRect(0, 0, w, h);
+
+      const px = pointer.x * w;
+      const py = pointer.y * h;
+
+      // 鼠标附近的一团极淡冷光，像手电扫过星尘
+      const glowRadius = Math.min(w, h) * 0.34;
+      const glow = ctx.createRadialGradient(px, py, 0, px, py, glowRadius);
+      glow.addColorStop(0, 'rgba(159, 230, 255, 0.05)');
+      glow.addColorStop(0.45, 'rgba(120, 180, 220, 0.016)');
+      glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, w, h);
+
+      const pxOffset = pointer.x - 0.5;
+      const pyOffset = pointer.y - 0.5;
+
+      for (const s of stars) {
+        if (animate) {
+          // 引力 + 弹簧回弹
+          const baseX = s.bx * w + pxOffset * s.z * 30 + s.ox;
+          const baseY = s.by * h + pyOffset * s.z * 20 + s.oy;
+          const dx = px - baseX;
+          const dy = py - baseY;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 240 && dist > 0.01) {
+            const force = (1 - dist / 240) * 0.55;
+            s.vx += (dx / dist) * force;
+            s.vy += (dy / dist) * force;
+          }
+          s.vx += -s.ox * 0.03;
+          s.vy += -s.oy * 0.03;
+          s.vx *= 0.9;
+          s.vy *= 0.9;
+          s.ox += s.vx;
+          s.oy += s.vy;
+          s.ox = Math.max(-46, Math.min(46, s.ox));
+          s.oy = Math.max(-38, Math.min(38, s.oy));
+        }
+
+        const x = s.bx * w + pxOffset * s.z * 30 + s.ox;
+        const y = s.by * h + pyOffset * s.z * 20 + s.oy;
+        const twinkle = animate ? 0.68 + 0.32 * Math.sin(time * s.speed + s.phase) : 0.85;
+        const alpha = s.a * twinkle;
+
+        if (s.r > 1.15) {
+          const halo = ctx.createRadialGradient(x, y, 0, x, y, s.r * 4.2);
+          halo.addColorStop(0, starColor(s.tint, alpha * 0.32));
+          halo.addColorStop(1, starColor(s.tint, 0));
+          ctx.fillStyle = halo;
+          ctx.beginPath();
+          ctx.arc(x, y, s.r * 4.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.fillStyle = starColor(s.tint, alpha);
+        ctx.beginPath();
+        ctx.arc(x, y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 引力波
+      for (const r of ripples) {
+        const progress = r.life / 1.15;
+        const radius = 12 + progress * 300;
+        const alpha = (1 - progress) * 0.3;
+        ctx.strokeStyle = `rgba(159, 230, 255, ${alpha.toFixed(3)})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, radius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = `rgba(159, 230, 255, ${(alpha * 0.45).toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, radius * 0.72, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // 流星
+      if (shooting) {
+        const fade = Math.sin(Math.min(1, shooting.life) * Math.PI);
+        const tailX = shooting.x - shooting.vx * shooting.length;
+        const tailY = shooting.y - shooting.vy * shooting.length;
+        const trail = ctx.createLinearGradient(shooting.x, shooting.y, tailX, tailY);
+        trail.addColorStop(0, `rgba(214, 247, 255, ${(fade * 0.75).toFixed(3)})`);
+        trail.addColorStop(1, 'rgba(214, 247, 255, 0)');
+        ctx.strokeStyle = trail;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(shooting.x, shooting.y);
+        ctx.lineTo(tailX, tailY);
+        ctx.stroke();
+      }
+    }
+
+    function frame(now: number) {
+      raf = 0;
+      if (!running) return;
+
+      const delta = Math.min(0.05, Math.max(0, (now - (lastNow || now)) / 1000));
+      lastNow = now;
+      time += delta;
+
+      pointer.x += (pointer.tx - pointer.x) * 0.06;
+      pointer.y += (pointer.ty - pointer.y) * 0.06;
+
+      for (const ripple of ripples) ripple.life += delta;
+      ripples = ripples.filter((ripple) => ripple.life < 1.15);
+
+      if (!shooting && now > nextShooting) {
+        shooting = {
+          x: rand(w * 0.15, w * 0.7),
+          y: rand(-40, h * 0.2),
+          vx: rand(260, 420),
+          vy: rand(110, 190),
+          life: 0,
+          length: rand(0.22, 0.42),
+        };
+        nextShooting = now + rand(8000, 16000);
+      }
+      if (shooting) {
+        shooting.life += delta * 1.6;
+        shooting.x += shooting.vx * delta;
+        shooting.y += shooting.vy * delta;
+        if (shooting.life > 1) shooting = null;
+      }
+
+      draw(now);
+      raf = requestAnimationFrame(frame);
+    }
+
+    function onPointerMove(event: PointerEvent) {
+      if (event.pointerType === 'touch') return;
+      pointer.tx = event.clientX / Math.max(1, w);
+      pointer.ty = event.clientY / Math.max(1, h);
+      if (!running && !reduceQuery.matches && !themeIsLight()) {
+        running = true;
+        lastNow = 0;
+        if (!raf) raf = requestAnimationFrame(frame);
+      }
+    }
+
+    function onPointerDown(event: PointerEvent) {
+      const target = event.target as Element | null;
+      if (target?.closest('a, button, input, textarea, select, label')) return;
+      if (reduceQuery.matches || themeIsLight()) return;
+
+      const x = event.clientX;
+      const y = event.clientY;
+      ripples.push({ x, y, life: 0 });
+
+      // 把附近的星星推开
+      for (const s of stars) {
+        const sx = s.bx * w + s.ox;
+        const sy = s.by * h + s.oy;
+        const dx = sx - x;
+        const dy = sy - y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 260 && dist > 0.01) {
+          const force = (1 - dist / 260) * 3.4;
+          s.vx += (dx / dist) * force;
+          s.vy += (dy / dist) * force;
+        }
+      }
+
+      if (!running && !reduceQuery.matches) {
+        running = true;
+        lastNow = 0;
+        if (!raf) raf = requestAnimationFrame(frame);
+      }
+    }
+
+    function syncRunning() {
+      const shouldRun =
+        visible && !document.hidden && !reduceQuery.matches && !themeIsLight();
+      if (shouldRun === running) return;
+      running = shouldRun;
+      if (running) {
+        wrap.classList.add('is-live');
+        lastNow = 0;
+        if (!raf) raf = requestAnimationFrame(frame);
+      } else if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        if (!themeIsLight()) draw(false);
+      }
+    }
+
+    const ac = new AbortController();
+    const { signal } = ac;
+
+    window.addEventListener('resize', () => {
+      resize();
+    }, { passive: true, signal });
+    window.addEventListener('pointermove', onPointerMove, { passive: true, signal });
+    window.addEventListener('pointerdown', onPointerDown, { passive: true, signal });
+    document.addEventListener('visibilitychange', syncRunning, { signal });
+
+    const themeObserver = new MutationObserver(syncRunning);
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+    reduceQuery.addEventListener('change', syncRunning, { signal });
+
+    // 首屏不可见时也先画一帧，避免滚动回来空白
+    resize();
+    draw(false);
+    wrap.classList.add('is-live');
+    syncRunning();
+  })();
+</script>

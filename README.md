@@ -124,6 +124,9 @@ JetBrains Mono 元信息 + 系统中文衬线标题 / 无衬线正文；直角�
   `GET /api/comments?recent=1&limit=100`：扫一遍 `comments` 表、按时间倒序返回最近 N 条
   （留言量小，跨分区扫描足够快）。每张卡片链到 `/blog/<slug>/#comment-<id>`，
   文章页的留言区会给目标留言加冰蓝描边并自动滚到它旁边；文章页留言标题旁也有「全部留言 ↗」入口。
+  题头右侧是一张**可交互的留言星座**：每颗星对应一条留言，悬停显示作者 / 时间 / 摘要并点亮对应卡片，
+  点击星星会滚动到那张卡片并脉冲一下；星图中心有一颗小黑洞剪影与首页呼应。
+  页面背后还有一层固定星野（`WallSky.astro`），鼠标会轻微吸引附近星点，点击空白处扩散一圈引力波。
 - **主题预览**：任意页面加 `?theme=light` 或 `?theme=dark`；浅色是纯白纸面 + 黑字。
   首页始终是单一底色，只有内页个别模块（如文章作者卡）用反色块
 - **可访问性**：键盘焦点可见、`prefers-reduced-motion` 全量降级、无 JS 时内容完整可见
@@ -166,6 +169,7 @@ JetBrains Mono 元信息 + 系统中文衬线标题 / 无衬线正文；直角�
     ├── components/
     │   ├── Hero.astro          # 首屏
     │   ├── BlackHole.astro     # 首屏黑洞着色器
+    │   ├── WallSky.astro       # 留言墙星野（鼠标引力 / 点击引力波）
     │   ├── Starfield.astro     # WebGL 星场
     │   ├── StarChart.astro     # 文章星图缩略
     │   ├── Cursor.astro        # 自定义光标
