@@ -23,6 +23,9 @@ pnpm-debug.log*
 api/local.settings.json
 api/.funcignore
 
+# Azurite 本地存储模拟器的数据目录（本地验证 api/ 留言用，见 HANDOFF.md）
+.azurite/
+
 # macOS / editor
 .DS_Store
 .vscode/*
